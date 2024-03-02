@@ -21,6 +21,8 @@ alembic = "^1.11.1"
 asyncpg = "^0.28.0"
 validators = "^0.20.0"
 greenlet = "^3.0.3"
+passlib = "^1.7.4"
+jose = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
