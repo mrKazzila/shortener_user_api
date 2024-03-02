@@ -20,3 +20,4 @@ cover/
 /htmlcov/
 .coverage
 .coverage.*
+/persistentdata/
