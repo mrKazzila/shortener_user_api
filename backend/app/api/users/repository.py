@@ -1,6 +1,6 @@
 from adapters.repository import SQLAlchemyRepository
 
-from api.users.models import Users
+from app.api.users.models import Users
 
 
 class UsersRepository(SQLAlchemyRepository):
