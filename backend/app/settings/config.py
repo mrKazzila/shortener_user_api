@@ -1,46 +1,27 @@
 import logging
 from functools import lru_cache
+from pathlib import Path
 from sys import exit
-from typing import Annotated, Literal, cast
+from typing import Annotated, cast
 
 from annotated_types import Ge, Le, MinLen
-from pydantic import HttpUrl, PostgresDsn, RedisDsn, SecretStr, ValidationError
-from pydantic_settings import BaseSettings
+from pydantic import PostgresDsn, SecretStr, ValidationError
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
 
-class SentrySettings(BaseSettings):
-    """Settings for Sentry."""
+class ProjectBaseSettings(BaseSettings):
+    __ROOT_DIR_ID: int = 2
 
-    SENTRY_URL: HttpUrl
-    TRACES_SAMPLE_RATE: float
-    PROFILES_SAMPLE_RATE: float
-
-
-class RedisSettings(BaseSettings):
-    """Settings for Redis."""
-
-    REDIS_VERSION: str
-
-    REDIS_HOST: str
-    REDIS_PORT: Annotated[int, Ge(1), Le(65_535)]
-    REDIS_CACHE_TIME: Annotated[int, Ge(1)]
-
-    @property
-    def redis_url(self) -> RedisDsn:
-        scheme_ = 'redis'
-        url_ = RedisDsn.build(
-            scheme=scheme_,
-            host=self.REDIS_HOST,
-            port=self.REDIS_PORT,
-        )
-
-        return str(url_)
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parents[__ROOT_DIR_ID].joinpath('env/.env'),
+    )
 
 
-class DatabaseSettings(BaseSettings):
-    """Settings for DB."""
+class Settings(ProjectBaseSettings):
+    """Main settings for project."""
+    APP_NAME: str
 
     POSTGRES_VERSION: str
 
@@ -63,24 +44,7 @@ class DatabaseSettings(BaseSettings):
             path=f'{self.DB_NAME}',
         )
 
-        return str(url_)
-
-
-class Settings(BaseSettings):
-    """Main settings for project."""
-
-    db: DatabaseSettings = DatabaseSettings()
-    redis: RedisSettings = RedisSettings()
-    sentry: SentrySettings = SentrySettings()
-
-    APP_NAME: str
-    MODE: Literal['TEST', 'DEV', 'PROD']
-
-    BASE_URL: str
-    DOMAIN: str
-    DOMAIN_PORT: Annotated[int, Ge(1), Le(65_535)]
-
-    KEY_LENGTH: Annotated[int, Ge(3), Le(10)]
+        return url_
 
 
 @lru_cache
