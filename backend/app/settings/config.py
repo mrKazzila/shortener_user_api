@@ -22,6 +22,7 @@ class ProjectBaseSettings(BaseSettings):
 class Settings(ProjectBaseSettings):
     """Main settings for project."""
     APP_NAME: str
+    MODE: str
 
     POSTGRES_VERSION: str
 
