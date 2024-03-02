@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.service_layer.abc_unit_of_work import ABCUnitOfWork
-from app.settings.database import async_session_maker
+from service_layer.abc_unit_of_work import ABCUnitOfWork
+from settings.database import async_session_maker
 
 
 class UnitOfWork(ABCUnitOfWork):

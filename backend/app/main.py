@@ -4,10 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.router_setup import routers_setup
-from app.settings.config import settings
-from app.settings.metrics_setup import metrics_setup
-from app.settings.sentry_setup import sentry_setup
+from api.router_setup import routers_setup
+from settings.config import settings
+from settings.metrics_setup import metrics_setup
+from settings.sentry_setup import sentry_setup
 
 logger = logging.getLogger(__name__)
 
