@@ -25,7 +25,7 @@ class SQLAlchemyConnection(Connection):
 
 
 engine: AsyncEngine = create_async_engine(
-    url=settings().db.dsn,
+    url=str(settings().dsn),
     echo=True,
     connect_args={
         'statement_cache_size': 0,

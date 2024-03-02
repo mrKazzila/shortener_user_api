@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from api.healthcheck.data_types import HealthcheckStatus
+from app.api.healthcheck.data_types import HealthcheckStatus
 
 OK_STATUS = HealthcheckStatus()
 

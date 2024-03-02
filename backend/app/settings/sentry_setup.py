@@ -3,7 +3,7 @@ from sys import exit
 
 import sentry_sdk
 
-from settings.config import settings
+from app.settings.config import settings
 
 logger = logging.getLogger(__name__)
 
