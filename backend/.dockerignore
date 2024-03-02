@@ -1,6 +1,5 @@
 # ===== Project =====
-/linters/
-./README.md
+**README.md
 ./.coverage
 ./Makefile
 .DS_Store
