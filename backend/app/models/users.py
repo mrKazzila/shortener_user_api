@@ -1,11 +1,9 @@
-from typing import Annotated
-
 from sqlalchemy import String
 from sqlalchemy.orm import mapped_column, Mapped
 
 from app.settings.database import Base
 
-int_pk = Annotated[int, mapped_column(primary_key=True)]
+__all__ = ['Users']
 
 
 class Users(Base):
@@ -20,7 +18,7 @@ class Users(Base):
         unique=True,
         nullable=False,
     )
-    hashed_password: Mapped[str] = mapped_column(
+    password: Mapped[str] = mapped_column(
         doc='User password (hash)',
         type_=String(500),
         nullable=False,
