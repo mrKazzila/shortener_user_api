@@ -3,13 +3,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
-from app.service_layer import exceptions as service_exceptions #import UserNotFoundException,
-# IncorrectEmailOrPasswordException
+
 from app.api.dependencies import get_current_user_from_access_token, verify_refresh_token
 from app.api.exceptions import UserAlreadyExistException, UserNotFoundException, IncorrectEmailOrPasswordException
 from app.api.users.auth_utils import TokenManager
 from app.schemas.tokens import STokens, STokenData
 from app.schemas.users import SUser
+from app.service_layer import exceptions as service_exceptions
 from app.service_layer.services.users import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
