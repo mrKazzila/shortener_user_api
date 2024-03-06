@@ -22,7 +22,8 @@ RUN \
     apt-get update && \
     apt-get install --no-install-recommends -y \
     # deps for installing poetry
-        curl=$CURL_VERSION && \
+        #curl=$CURL_VERSION && \
+        curl && \
     # install poetry \
     curl -sSL https://install.python-poetry.org | python - --version $POETRY_VERSION && \
     # cleaning cache

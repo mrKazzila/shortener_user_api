@@ -20,6 +20,9 @@ sqlalchemy = "^2.0.19"
 alembic = "^1.11.1"
 asyncpg = "^0.28.0"
 validators = "^0.20.0"
+greenlet = "^3.0.3"
+passlib = "^1.7.4"
+python-jose = "^3.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
@@ -28,10 +31,7 @@ pytest-dotenv = "^0.5.2"
 coverage = "^7.3.0"
 httpx = "^0.24.1"
 
-pre-commit = "^3.3.0"
-black = "^23.9.1"
 ruff = "^0.0.291"
-isort = "^5.12.0"
 bandit = "^1.7.5"
 pyright = "^1.1.327"
 
@@ -40,18 +40,78 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 
-[tool.black]
-extend = "linters/black.toml"
+# ==========================
+# ===== TOOLS SETTINGS =====
+# ==========================
+[tool.pytest.ini_options]
+# https://docs.pytest.org/en/7.3.x/reference/customize.html
+addopts = "-v -s -rA -p no:warnings"
+testpaths = [
+    "tests",
+]
+markers = [
+    "unit: Suite of unit tests",
+    "integration: Suite of integration tests",
+    "e2e: Suite of e2e tests"
+]
+
 
 [tool.ruff]
-extend = "linters/ruff.toml"
+# https://docs.astral.sh/ruff/
+respect-gitignore = true
+line-length = 80
+indent-width = 4
+target-version = "py311"
+src = ["app"]
+fixable = ["ALL"]
 
-[tool.isort]
-profile = "black"
-line_length = 79
+select = [
+    "I",                    # isort
+    "A",                    # flake8-builtins
+    "F",                    # Pyflakes
+    "E", "W",               # Pycodestyle
+    "N",                    # pep8-naming
+    "Q",                    # flake8-quotes
+    "UP",                   # pyupgrade
+    "PT",                   # flake8-pytest-style
+    "C4",                   # flake8-comprehensions
+    "ERA",                  # eradicate
+    "RET",                  # flake8-return
+    "ARG",                  # flake8-unused-arguments
+    "PTH",                  # flake8-use-pathlib
+    "FLY",                  # flynt
+    "ANN",                  # flake8-annotations
+    "COM",                  # flake8-commas
+    "G001",                 # flake8-logging-format
+    "D101", "D102", "D103", # pydocstyle
+    "D201", "D202", "D204",
+    "D213", "D300", "D419",
+]
 
-[tool.pyright]
-extend = "linters/pyright.toml"
+ignore = [
+    "ANN002",  # Missing type annotation for *{name}
+    "ANN003",  # Missing type annotation for **{name}
+    "ANN101",  # Missing type annotation for {name} in method
+    "ANN102",  # Missing type annotation for {name} in classmethod
+    "ANN401",  # Dynamically typed expressions (typing.Any)
+    "PT007",   # Wrong values type in `@pytest.mark.parametrize` expected `list` of `tuple`
+]
 
-[tool.bandit]
-extend = "linters/bandit.toml"
+[tool.ruff.format]
+skip-magic-trailing-comma = false
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = true
+combine-as-imports = true
+lines-after-imports = 1
+lines-between-types = 0
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
