@@ -15,18 +15,24 @@ class ProjectBaseSettings(BaseSettings):
     __ROOT_DIR_ID: int = 2
 
     model_config = SettingsConfigDict(
-        env_file=Path(__file__).resolve().parents[__ROOT_DIR_ID].joinpath('env/.env'),
+        env_file=Path(__file__)
+        .resolve()
+        .parents[__ROOT_DIR_ID]
+        .joinpath("env/.env"),
     )
 
 
 class Settings(ProjectBaseSettings):
     """Main settings for project."""
+
     APP_NAME: str
     MODE: str
 
     ACCESS_TOKEN_EXPIRES: int = 1
     REFRESH_TOKEN_EXPIRES: int = 300
-    SECRET_KEY: str = "09d25e094faa6ca2556c818136b7a9563b93f7022f6y0f4caa6cg63b88e8d4e7"
+    SECRET_KEY: (
+        str
+    ) = "09d25e094faa6ca2556c818136b7a9563b93f7022f6y0f4caa6cg63b88e8d4e7"
     ALGORITHM: str = "HS256"
 
     POSTGRES_VERSION: str
@@ -41,26 +47,23 @@ class Settings(ProjectBaseSettings):
     @property
     def dsn(self, protocol=None) -> PostgresDsn:
         protocol = protocol or self.DB_PROTOCOL
-        url_ = PostgresDsn.build(
+        return PostgresDsn.build(
             scheme=protocol,
             username=self.DB_USER,
             password=self.DB_PASSWORD.get_secret_value(),
             host=self.DB_HOST,
             port=self.DB_PORT,
-            path=f'{self.DB_NAME}',
+            path=f"{self.DB_NAME}",
         )
-
-        return url_
 
 
 @lru_cache
 def settings() -> Settings:
-    logger.info('Loading settings from env')
+    logger.info("Loading settings from env")
 
     try:
-        settings_ = Settings()
-        return settings_
+        return Settings()
 
     except ValidationError as e:
-        logger.error('Error at loading settings from env. %(err)s', {'err': e})
+        logger.error("Error at loading settings from env. %(err)s", {"err": e})
         exit(e)

@@ -1,7 +1,7 @@
 from app.adapters.base import SQLAlchemyRepository
 from app.models import Users
 
-__all__ = ['UsersRepository']
+__all__ = ["UsersRepository"]
 
 
 class UsersRepository(SQLAlchemyRepository):
@@ -10,4 +10,4 @@ class UsersRepository(SQLAlchemyRepository):
     model = Users
 
     def __repr__(self) -> str:
-        return f'UsersRepository for model: {self.model}'
+        return f"UsersRepository for model: {self.model}"

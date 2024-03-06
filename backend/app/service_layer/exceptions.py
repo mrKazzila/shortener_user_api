@@ -4,4 +4,3 @@ class UserNotFoundException(Exception):
 
 class IncorrectEmailOrPasswordException(Exception):
     pass
-

@@ -1,14 +1,14 @@
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import SecretStr
 
 from app.api.exceptions import DecodeTokenException
-from app.schemas.tokens import STokenTypes, STokenData, STokens
+from app.schemas.tokens import STokenData, STokens, STokenTypes
 from app.settings.config import settings
 
-__all__ = ['TokenManager', 'PasswordManager']
+__all__ = ["TokenManager", "PasswordManager"]
 
 
 class PasswordManager:
@@ -16,10 +16,10 @@ class PasswordManager:
 
     @classmethod
     def verify_password(
-            cls,
-            *,
-            plain_secret_password: SecretStr | str,
-            hashed_pwd: SecretStr | str,
+        cls,
+        *,
+        plain_secret_password: SecretStr | str,
+        hashed_pwd: SecretStr | str,
     ) -> bool:
         plain_str_password = cls._convert_password_to_str(plain_secret_password)
         hashed_pwd_str = cls._convert_password_to_str(hashed_pwd)
@@ -88,7 +88,7 @@ class TokenManager:
     def _create_token(data: dict, expires_delta: timedelta) -> str:
         to_encode = data.copy()
 
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
         to_encode.update({"exp": expire})
 
         return jwt.encode(

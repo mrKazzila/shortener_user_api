@@ -1,14 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.adapters import UsersRepository
 from app.service_layer.unit_of_work.abc_uow import ABCUnitOfWork
 from app.settings.database import async_session_maker
-from app.adapters import UsersRepository
 
-__all__ = ['UnitOfWork']
+__all__ = ["UnitOfWork"]
 
 
 class UnitOfWork(ABCUnitOfWork):
-    __slots__ = ('session_factory',)
+    __slots__ = ("session_factory",)
 
     def __init__(self) -> None:
         self.session_factory = async_session_maker
