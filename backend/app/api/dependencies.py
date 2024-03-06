@@ -2,26 +2,31 @@ import logging
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import Depends, Request, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 
-from app.api.exceptions import IncorrectTokenTypeException, IncorrectTokenFormatException, EmptyTokenException, \
-    ExpireTokenException, UserNotFoundException
+from app.api.exceptions import (
+    EmptyTokenException,
+    ExpireTokenException,
+    IncorrectTokenFormatException,
+    IncorrectTokenTypeException,
+    UserNotFoundException,
+)
 from app.api.users.auth_utils import TokenManager
-from app.schemas.tokens import STokenTypes, STokenData
+from app.schemas.tokens import STokenData, STokenTypes
 from app.schemas.users import SUser
 from app.service_layer.services.users import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
-__all__ = ['get_current_user_from_access_token', 'verify_refresh_token']
+__all__ = ["get_current_user_from_access_token", "verify_refresh_token"]
 logger = logging.getLogger(__name__)
 
 _oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 async def get_current_user_from_access_token(
-        token: Annotated[_oauth2_scheme, Depends()],
-        uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
+    token: Annotated[_oauth2_scheme, Depends()],
+    uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
 ) -> SUser:
     try:
         payload_data = TokenManager.decode_token(token)
@@ -33,8 +38,8 @@ async def get_current_user_from_access_token(
             raise IncorrectTokenFormatException
 
         if user := await UsersServices.get_user_from_db(
-                uow=uow,
-                email=payload_data.email,
+            uow=uow,
+            email=payload_data.email,
         ):
             return user
 
@@ -46,14 +51,14 @@ async def get_current_user_from_access_token(
 
 def _get_refresh_token_from_cookies(request: Request):
     # todo: check cookies not Request?
-    if refresh_token := request.cookies.get('booking_access_token'):
+    if refresh_token := request.cookies.get("booking_access_token"):
         return refresh_token
 
     raise EmptyTokenException
 
 
 async def verify_refresh_token(
-        refresh_token: Annotated[str, Depends(_get_refresh_token_from_cookies)],
+    refresh_token: Annotated[str, Depends(_get_refresh_token_from_cookies)],
 ) -> STokenData:
     try:
         payload_data = TokenManager.decode_token(refresh_token)

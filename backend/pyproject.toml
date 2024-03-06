@@ -60,7 +60,6 @@ markers = [
 # https://docs.astral.sh/ruff/
 respect-gitignore = true
 line-length = 80
-indent-width = 4
 target-version = "py311"
 src = ["app"]
 fixable = ["ALL"]
@@ -105,13 +104,16 @@ indent-style = "space"
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402"]
 
-[tool.ruff.lint.isort]
+[tool.ruff.isort]
 split-on-trailing-comma = true
 combine-as-imports = true
 lines-after-imports = 1
 lines-between-types = 0
+known-local-folder = [
+    "app",
+]
 
-[tool.ruff.lint.flake8-quotes]
+[tool.ruff.flake8-quotes]
 inline-quotes = "double"
 multiline-quotes = "double"
 docstring-quotes = "double"

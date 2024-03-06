@@ -10,15 +10,15 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
-    logger.info('Service started')
+    logger.info("Service started")
 
     yield
 
-    logger.info('Service exited')
+    logger.info("Service exited")
 
 
 app = FastAPI(
-    title='ShortenerUserApi',
+    title="ShortenerUserApi",
     lifespan=lifespan,
 )
 
