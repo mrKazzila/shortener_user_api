@@ -18,7 +18,6 @@ __all__ = ['async_session_maker', 'Base', 'ENGINE_URL']
 
 ENGINE_URL: str = str(settings().dsn)
 
-
 # fix asyncpg.exceptions.InvalidSQLStatementNameError:
 # prepared statement "__asyncpg_stmt_4c" does not exist
 # discussion

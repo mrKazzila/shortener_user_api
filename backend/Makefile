@@ -18,7 +18,6 @@ down:
 	@echo "Success down!"
 
 
-
 # ===== Linters & Formatter automation =====
 lint:
 	echo "Start linters ..."
