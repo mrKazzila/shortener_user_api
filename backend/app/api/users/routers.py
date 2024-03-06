@@ -4,10 +4,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.dependencies import get_current_user_from_access_token, verify_refresh_token
-from app.api.exceptions import UserAlreadyExistException, UserNotFoundException, IncorrectEmailOrPasswordException
+from app.api.dependencies import (
+    get_current_user_from_access_token,
+    verify_refresh_token,
+)
+from app.api.exceptions import (
+    IncorrectEmailOrPasswordException,
+    UserAlreadyExistException,
+    UserNotFoundException,
+)
 from app.api.users.auth_utils import TokenManager
-from app.schemas.tokens import STokens, STokenData
+from app.schemas.tokens import STokenData, STokens
 from app.schemas.users import SUser
 from app.service_layer import exceptions as service_exceptions
 from app.service_layer.services.users import UsersServices
@@ -17,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/auth",
-    tags=['auth & users'],
+    tags=["auth & users"],
 )
 
 
@@ -27,12 +34,12 @@ router = APIRouter(
     response_model=dict[str, str],
 )
 async def create_user(
-        user_data: SUser,
-        uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
+    user_data: SUser,
+    uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
 ):
     if await UsersServices.get_user_from_db(
-            uow=uow,
-            email=user_data.email,
+        uow=uow,
+        email=user_data.email,
     ):
         raise UserAlreadyExistException
 
@@ -41,11 +48,11 @@ async def create_user(
     return {"200": "User created"}
 
 
-@router.post('/login')
+@router.post("/login")
 async def login_user(
-        response: Response,
-        form_user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
+    response: Response,
+    form_user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
 ) -> STokens:
     try:
         await UsersServices.is_authenticate_user(
@@ -59,7 +66,7 @@ async def login_user(
         )
 
         response.set_cookie(
-            key='booking_access_token',
+            key="booking_access_token",
             value=token_pair.refresh_token,
             httponly=True,
             expires=360,
@@ -74,6 +81,7 @@ async def login_user(
         if isinstance(e, service_exceptions.IncorrectEmailOrPasswordException):
             raise IncorrectEmailOrPasswordException
 
+
 @router.post(
     "/refresh",
     summary="Refresh token",
@@ -85,7 +93,7 @@ def token_refresh(
     new_token_pair = TokenManager.update_token_pair(email=refresh_token.email)
 
     response.set_cookie(
-        key='booking_access_token',
+        key="booking_access_token",
         value=new_token_pair.refresh_token,
         httponly=True,
         expires=360,
@@ -94,18 +102,23 @@ def token_refresh(
     return new_token_pair
 
 
-@router.get('/me')
+@router.get("/me")
 async def get_current_user_info(response: Response):
-    return {'code': 200, 'headers': response.headers}
+    return {"code": 200, "headers": response.headers}
 
 
 @router.get("/test-protected1")
 async def protected_route(
-        current_user: SUser = Depends(get_current_user_from_access_token)
+    current_user: SUser = Depends(get_current_user_from_access_token),
 ):
     return {"message": "This is a protected route"}
 
 
 @router.get("/test-protected2")
-async def test_protected_route(current_user: dict = Depends(get_current_user_from_access_token)):
-    return {"message": "This is a test protected route", "user_info": current_user}
+async def test_protected_route(
+    current_user: dict = Depends(get_current_user_from_access_token),
+):
+    return {
+        "message": "This is a test protected route",
+        "user_info": current_user,
+    }
