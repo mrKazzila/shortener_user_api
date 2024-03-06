@@ -24,6 +24,11 @@ class Settings(ProjectBaseSettings):
     APP_NAME: str
     MODE: str
 
+    ACCESS_TOKEN_EXPIRES: int = 1
+    REFRESH_TOKEN_EXPIRES: int = 300
+    SECRET_KEY: str = "09d25e094faa6ca2556c818136b7a9563b93f7022f6y0f4caa6cg63b88e8d4e7"
+    ALGORITHM: str = "HS256"
+
     POSTGRES_VERSION: str
 
     DB_PROTOCOL: str

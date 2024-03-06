@@ -11,7 +11,7 @@ services:
     restart: always
     env_file:
       - env/.env
-    command: sh -c " pwd && ls -a &&
+    command: sh -c "
       ./scripts/run_app.sh
       "
     ports:

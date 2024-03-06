@@ -1,8 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
 
-from app.api.router_setup import routers_setup
 from fastapi import FastAPI
+
+from app.api import routers_setup
 
 logger = logging.getLogger(__name__)
 
