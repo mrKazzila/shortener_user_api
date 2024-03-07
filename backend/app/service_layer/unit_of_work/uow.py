@@ -1,3 +1,5 @@
+from typing import Self
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters import UsersRepository
@@ -28,7 +30,7 @@ class UnitOfWork(ABCUnitOfWork):
             self._users_repo = UsersRepository(session=self.session)
         return self._users_repo
 
-    async def __aenter__(self) -> ABCUnitOfWork:
+    async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
