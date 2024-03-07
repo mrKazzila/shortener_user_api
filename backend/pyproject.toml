@@ -59,7 +59,7 @@ markers = [
 [tool.ruff]
 # https://docs.astral.sh/ruff/
 respect-gitignore = true
-line-length = 80
+line-length = 79
 target-version = "py311"
 src = ["app"]
 fixable = ["ALL"]
