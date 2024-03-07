@@ -28,12 +28,11 @@ class Settings(ProjectBaseSettings):
     APP_NAME: str
     MODE: str
 
-    ACCESS_TOKEN_EXPIRES: int = 1
-    REFRESH_TOKEN_EXPIRES: int = 300
-    SECRET_KEY: (
-        str
-    ) = "09d25e094faa6ca2556c818136b7a9563b93f7022f6y0f4caa6cg63b88e8d4e7"
-    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(25)]
+    REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(100), Le(360)]
+    SECRET_KEY: str
+    ALGORITHM: str
+    JWT_COOKIE_NAME: str
 
     POSTGRES_VERSION: str
 

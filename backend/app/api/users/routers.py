@@ -2,22 +2,19 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
+from app.api import exceptions as api_exceptions
 from app.api.dependencies import (
     get_current_user_from_access_token,
     verify_refresh_token,
-)
-from app.api.exceptions import (
-    IncorrectEmailOrPasswordException,
-    UserAlreadyExistException,
-    UserNotFoundException,
 )
 from app.api.users.auth_utils import TokenManager
 from app.schemas.tokens import STokenData, STokens
 from app.schemas.users import SUser
 from app.service_layer import exceptions as service_exceptions
-from app.service_layer.services.users import UsersServices
+from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
 logger = logging.getLogger(__name__)
@@ -41,11 +38,11 @@ async def create_user(
         uow=uow,
         email=user_data.email,
     ):
-        raise UserAlreadyExistException
+        raise api_exceptions.UserAlreadyExistException
 
     await UsersServices.create_new_user(uow=uow, user_data=user_data)
 
-    return {"200": "User created"}
+    return JSONResponse(content={"message": "User created"})
 
 
 @router.post("/login")
@@ -65,21 +62,21 @@ async def login_user(
             email=form_user_data.username,
         )
 
-        response.set_cookie(
-            key="booking_access_token",
-            value=token_pair.refresh_token,
-            httponly=True,
-            expires=360,
+        TokenManager.set_token_to_cookie(
+            response=response,
+            refresh_token=token_pair.refresh_token,
         )
 
         return token_pair
+
+    except service_exceptions.UserNotFoundException:
+        raise api_exceptions.UserNotFoundException
+
+    except service_exceptions.IncorrectEmailOrPasswordException:
+        raise api_exceptions.IncorrectEmailOrPasswordException
+
     except HTTPException as e:
         raise e
-    except Exception as e:
-        if isinstance(e, service_exceptions.UserNotFoundException):
-            raise UserNotFoundException
-        if isinstance(e, service_exceptions.IncorrectEmailOrPasswordException):
-            raise IncorrectEmailOrPasswordException
 
 
 @router.post(
@@ -92,26 +89,12 @@ def token_refresh(
 ) -> STokens:
     new_token_pair = TokenManager.update_token_pair(email=refresh_token.email)
 
-    response.set_cookie(
-        key="booking_access_token",
-        value=new_token_pair.refresh_token,
-        httponly=True,
-        expires=360,
+    TokenManager.set_token_to_cookie(
+        response=response,
+        refresh_token=new_token_pair.refresh_token,
     )
 
     return new_token_pair
-
-
-@router.get("/me")
-async def get_current_user_info(response: Response):
-    return {"code": 200, "headers": response.headers}
-
-
-@router.get("/test-protected1")
-async def protected_route(
-    current_user: SUser = Depends(get_current_user_from_access_token),
-):
-    return {"message": "This is a protected route"}
 
 
 @router.get("/test-protected2")

@@ -1,21 +1,14 @@
 import logging
-from datetime import datetime
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-from app.api.exceptions import (
-    EmptyTokenException,
-    ExpireTokenException,
-    IncorrectTokenFormatException,
-    IncorrectTokenTypeException,
-    UserNotFoundException,
-)
+from app.api.exceptions import UserNotFoundException
 from app.api.users.auth_utils import TokenManager
 from app.schemas.tokens import STokenData, STokenTypes
 from app.schemas.users import SUser
-from app.service_layer.services.users import UsersServices
+from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
 __all__ = ["get_current_user_from_access_token", "verify_refresh_token"]
@@ -29,55 +22,43 @@ async def get_current_user_from_access_token(
     uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
 ) -> SUser:
     try:
-        payload_data = TokenManager.decode_token(token)
+        payload_data = TokenManager.decode_token(token=token)
 
-        if payload_data.type != STokenTypes.access:
-            raise IncorrectTokenTypeException
-
-        if not payload_data.email:
-            raise IncorrectTokenFormatException
+        TokenManager.validate_token_payload(
+            payload_data=payload_data,
+            token_type=STokenTypes.access,
+        )
 
         if user := await UsersServices.get_user_from_db(
             uow=uow,
             email=payload_data.email,
         ):
             return user
-
         raise UserNotFoundException
 
     except HTTPException as e:
         raise e
 
 
-def _get_refresh_token_from_cookies(request: Request):
-    # todo: check cookies not Request?
-    if refresh_token := request.cookies.get("booking_access_token"):
-        return refresh_token
-
-    raise EmptyTokenException
-
-
 async def verify_refresh_token(
-    refresh_token: Annotated[str, Depends(_get_refresh_token_from_cookies)],
+    refresh_token: Annotated[
+        str,
+        Depends(TokenManager.get_refresh_token_from_cookies),
+    ],
 ) -> STokenData:
     try:
-        payload_data = TokenManager.decode_token(refresh_token)
+        payload_data = TokenManager.decode_token(token=refresh_token)
 
-        if payload_data.type != STokenTypes.refresh:
-            raise IncorrectTokenTypeException
+        TokenManager.validate_token_payload(
+            payload_data=payload_data,
+            token_type=STokenTypes.refresh,
+        )
 
-        if not payload_data.email:
-            raise IncorrectTokenFormatException
-
-        if not __check_token_expire(expire_time=payload_data.expiration):
-            raise ExpireTokenException
+        TokenManager.validate_token_expire(
+            expire_time=payload_data.expiration,
+        )
 
         return payload_data
 
     except HTTPException as e:
         raise e
-
-
-def __check_token_expire(expire_time: int) -> bool:
-    current_time = int(datetime.utcnow().timestamp())
-    return not expire_time or (expire_time < current_time)

@@ -1,21 +1,22 @@
 # ===== Project =====
 **README.md
-./.coverage
-./Makefile
+.coverage
+Makefile
 .DS_Store
 
 # ===== Docker =====
-./.dockerignore
-./Dockerfile
+.dockerignore
+Dockerfile
+docker-compose.yaml
 
 # ===== Git =====
-./.gitignore
+.gitignore
 
 # ===== Env & venv =====
-./.venv/
-./env/.env.example
+.venv/
+env/.env.example
 
 # ===== Cache =====
-./.pytest_cache
+.pytest_cache
 **/__pycache__/
-./.ruff_cache
+.ruff_cache
