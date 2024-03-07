@@ -2,76 +2,39 @@
   shortener user api
 </h1>
 
-<div align="center">
-
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-
-</div>
 <hr>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#tech-stack">Tech stack</a> •
+  <a href="#simple-doc">Simple doc</a> •
   <a href="#how-to-use">How To Use</a>
 </p>
 
 
-## Features
-- Forms a short url of 5 characters
-- Redirects to the main url
-
-
-## Tech stack
-- [Python 3.11](https://www.python.org/downloads/)
-- [FastApi](https://fastapi.tiangolo.com/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [SQLAlchemy](https://www.sqlalchemy.org/)
-- [Alembic](https://pypi.org/project/alembic/)
-- [Poetry](https://python-poetry.org/docs/)
-
-
-## How To Use
+## Simple doc
 <details>
 
-<summary><strong>Use Docker</strong></summary>
+<summary><strong>(todo) add docs</strong></summary>
+
+</details>
+
+## How To Use
 
 1. Firstly clone repo
    ```bash
+   git clone git@github.com:mrKazzila/shortener_user_api.git
    ```
 
-2. Setup poetry
+2. Setup env for [Backend](https://github.com/mrKazzila/shortener/blob/main/backend/README.md)
+
+3. Run all services
    ```bash
-   make poetry_setup
+   make docker_setup_all
    ```
 
-3. Copy env example settings to env and fill them in
+4. Run backend tests
    ```bash
+   make docker_run_tests_back
    ```
-
-4. Run docker compose with make
-   ```bash
-   ```
-
-5. Stop docker compose with make
-   ```bash
-   ```
-
-</details>
-
-<details>
-<summary>Other useful commands</summary>
-
-1. Run pytest and generate coverage html report
-   ```bash
-   make test_coverage
-   ```
-
-2. Run linters & formatters
-   ```bash
-   make lint
-   ```
-
-</details>
 
 
 <br>
