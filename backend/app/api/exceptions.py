@@ -1,7 +1,19 @@
 from fastapi import HTTPException, status
 
+__all__ = (
+    # User
+    "UserNotFoundException",
+    "UserAlreadyExistException",
+    "IncorrectEmailOrPasswordException",
+    # Token
+    "DecodeTokenException",
+    "IncorrectTokenFormatException",
+    "EmptyTokenException",
+    "ExpireTokenException",
+)
 
-# === User Exception ===
+
+# === User ===
 class UserNotFoundException(HTTPException):
     def __init__(self) -> None:
         super().__init__(status_code=status.HTTP_404_NOT_FOUND)
@@ -23,7 +35,7 @@ class IncorrectEmailOrPasswordException(HTTPException):
         )
 
 
-# === Token Exception ===
+# === Token ===
 class BaseTokenException(HTTPException):
     def __init__(self, detail) -> None:
         super().__init__(

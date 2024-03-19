@@ -1,3 +1,6 @@
+__all__ = ("UserNotFoundException", "IncorrectEmailOrPasswordException")
+
+
 class UserNotFoundException(Exception):
     pass
 

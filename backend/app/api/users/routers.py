@@ -75,8 +75,8 @@ async def login_user(
     except service_exceptions.IncorrectEmailOrPasswordException:
         raise api_exceptions.IncorrectEmailOrPasswordException
 
-    except HTTPException as e:
-        raise e
+    except HTTPException as error_:
+        raise error_
 
 
 @router.post(

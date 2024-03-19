@@ -11,9 +11,9 @@ from app.schemas.users import SUser
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
-__all__ = ["get_current_user_from_access_token", "verify_refresh_token"]
-logger = logging.getLogger(__name__)
+__all__ = ("get_current_user_from_access_token", "verify_refresh_token")
 
+logger = logging.getLogger(__name__)
 _oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
@@ -36,8 +36,8 @@ async def get_current_user_from_access_token(
             return user
         raise UserNotFoundException
 
-    except HTTPException as e:
-        raise e
+    except HTTPException as error_:
+        raise error_
 
 
 async def verify_refresh_token(
@@ -60,5 +60,5 @@ async def verify_refresh_token(
 
         return payload_data
 
-    except HTTPException as e:
-        raise e
+    except HTTPException as error_:
+        raise error_
