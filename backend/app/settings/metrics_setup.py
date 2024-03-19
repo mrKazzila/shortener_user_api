@@ -3,6 +3,8 @@ import logging
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
+__all__ = ("metrics_setup",)
+
 logger = logging.getLogger(__name__)
 
 
@@ -10,12 +12,12 @@ def metrics_setup(*, app: FastAPI) -> None:
     """Setup prometheus fastapi instrumentator for metrics."""
     try:
         __setup(app=app)
-    except Exception as e:
+    except Exception as error_:
         logger.error(
-            "Prometheus fastapi instrumentator setup with error: %(error)s",
-            {"error": e},
+            "Prometheus fastapi instrumentator setup with error: %s",
+            error_,
         )
-        exit(e)
+        exit(error_)
 
 
 def __setup(*, app: FastAPI) -> None:

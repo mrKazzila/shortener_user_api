@@ -6,7 +6,7 @@ from app.adapters import UsersRepository
 from app.service_layer.unit_of_work.abc_uow import ABCUnitOfWork
 from app.settings.database import async_session_maker
 
-__all__ = ["UnitOfWork"]
+__all__ = ("UnitOfWork",)
 
 
 class UnitOfWork(ABCUnitOfWork):

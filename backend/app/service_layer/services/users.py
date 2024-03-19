@@ -8,7 +8,7 @@ from app.service_layer.exceptions import (
 )
 from app.service_layer.unit_of_work import UnitOfWork
 
-__all__ = ["UsersServices"]
+__all__ = ("UsersServices",)
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +42,7 @@ class UsersServices:
             result = await user_repo.get(reference=_reference)
 
         if result:
-            return SUser(
-                email=result.email,
-                password=result.password,
-            )
-
+            return SUser.model_validate(result)
         return None
 
     @classmethod

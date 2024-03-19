@@ -16,7 +16,7 @@ from app.api.exceptions import (
 from app.schemas.tokens import STokenData, STokens, STokenTypes
 from app.settings.config import settings
 
-__all__ = ["TokenManager", "PasswordManager"]
+__all__ = ("TokenManager", "PasswordManager")
 
 
 class PasswordManager:
@@ -89,8 +89,8 @@ class TokenManager:
                 cls._secret_key,
                 cls._algorithm,
             )
-        except JWTError as e:
-            raise DecodeTokenException(detail=e)
+        except JWTError as error_:
+            raise DecodeTokenException(detail=error_)
 
         return STokenData(
             email=raw_token_data.get("sub"),

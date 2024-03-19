@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.settings.database import Base
 
-__all__ = ["Users"]
+__all__ = ("Users",)
 
 
 class Users(Base):
@@ -23,6 +23,3 @@ class Users(Base):
         type_=String(500),
         nullable=False,
     )
-
-    def __repr__(self) -> str:
-        return f"User {self.id}: {self.email}"
