@@ -5,6 +5,8 @@ import sentry_sdk
 
 from app.settings.config import settings
 
+__all__ = ("sentry_setup",)
+
 logger = logging.getLogger(__name__)
 
 
@@ -12,9 +14,9 @@ def sentry_setup() -> None:
     """Sentry setup."""
     try:
         __setup()
-    except Exception as e:
-        logger.error("Sentry setup with error: %(error)s", {"error": e})
-        exit(e)
+    except Exception as error_:
+        logger.error("Sentry setup with error: %s", error_)
+        exit(error_)
 
 
 def __setup() -> None:

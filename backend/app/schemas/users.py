@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, SecretStr
 
-__all__ = ["SUser", "SUserDB"]
+__all__ = ("SUser", "SUserDB")
 
 
 class SUser(BaseModel):

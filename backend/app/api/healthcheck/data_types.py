@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+__all__ = ("OK_STATUS",)
+
 
 @dataclass(frozen=True)
 class HealthcheckStatus:

@@ -2,13 +2,13 @@ from enum import StrEnum
 
 from pydantic import BaseModel, EmailStr
 
-__all__ = [
+__all__ = (
     "SAccessToken",
     "SRefreshToken",
     "STokens",
     "STokenTypes",
     "STokenData",
-]
+)
 
 
 class STokenBase(BaseModel):

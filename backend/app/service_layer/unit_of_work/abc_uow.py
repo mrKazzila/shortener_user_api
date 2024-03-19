@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-__all__ = ["ABCUnitOfWork"]
+__all__ = ("ABCUnitOfWork",)
 
 
 class ABCUnitOfWork(ABC):

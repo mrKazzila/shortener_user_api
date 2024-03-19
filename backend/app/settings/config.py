@@ -8,6 +8,8 @@ from annotated_types import Ge, Le, MinLen
 from pydantic import PostgresDsn, SecretStr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+__all__ = ("settings",)
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,6 +65,6 @@ def settings() -> Settings:
     try:
         return Settings()
 
-    except ValidationError as e:
-        logger.error("Error at loading settings from env. %(err)s", {"err": e})
-        exit(e)
+    except ValidationError as error_:
+        logger.error("Error at loading settings from env. %s", error_)
+        exit(error_)
