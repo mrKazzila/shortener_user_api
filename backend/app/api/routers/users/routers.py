@@ -5,17 +5,19 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api import exceptions as api_exceptions
-from app.api.dependencies import (
+from api.routers import exceptions as api_exceptions
+from api.routers.dependencies import (
     get_current_user_from_access_token,
     verify_refresh_token,
 )
-from app.api.users.auth_utils import TokenManager
+from api.routers.users.auth_utils import TokenManager
 from app.schemas.tokens import STokenData, STokens
 from app.schemas.users import SUser
 from app.service_layer import exceptions as service_exceptions
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
+
+__all__ = ("router",)
 
 logger = logging.getLogger(__name__)
 

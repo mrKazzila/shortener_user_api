@@ -1,5 +1,7 @@
-from app.models.users import Users  # noqa
+from app.models.base import Base
+from app.models.users import Users
 
-from app.settings.database import Base  # noqa
-
-__all__ = ("Users", "Base")
+__all__ = (
+    "Base",
+    "Users",
+)

@@ -1,25 +1,20 @@
-import logging
-from contextlib import asynccontextmanager
+from app.api import MIDDLEWARES, ROUTERS
+from app.settings import create_app, middlewares_setup, routers_setup
 
-from fastapi import FastAPI
-
-from app.api import routers_setup
-
-logger = logging.getLogger(__name__)
-
-
-@asynccontextmanager
-async def lifespan(app_: FastAPI):
-    logger.info("Service started")
-
-    yield
-
-    logger.info("Service exited")
-
-
-app = FastAPI(
-    title="ShortenerUserApi",
-    lifespan=lifespan,
+app = create_app(
+    title="ShortenerUsersApi",
+    description="Simple API for url shortener users logic",
+    version="0.0.1",
+    contact={
+        "autor": "mrkazzila@gmail.com",
+    },
 )
 
-routers_setup(app=app)
+routers_setup(
+    app=app,
+    endpoints=ROUTERS,
+)
+middlewares_setup(
+    app=app,
+    middlewares=MIDDLEWARES,
+)
