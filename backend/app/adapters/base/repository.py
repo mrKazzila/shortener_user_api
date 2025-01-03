@@ -4,7 +4,7 @@ from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.base import ABCRepository
-from app.settings.database import Base
+from app.models import Base
 
 __all__ = ("SQLAlchemyRepository",)
 
@@ -29,7 +29,9 @@ class SQLAlchemyRepository(ABCRepository):
         return statement_result.scalar_one()
 
     async def get(
-        self, *, reference: dict[str, int | str]
+        self,
+        *,
+        reference: dict[str, int | str],
     ) -> type(model) | None:
         """Get entity by some reference."""
         _statement = select(self.model).filter_by(**reference)

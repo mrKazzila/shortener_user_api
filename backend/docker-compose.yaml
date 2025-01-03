@@ -29,7 +29,7 @@ services:
       - ../backend:/home/unprivilegeduser/shortener
 
   alembic_migrations:
-    container_name: alembic-migrations-users
+    container_name: alembic-migrations-auth
     image: alembic-migrations-users
     build:
       context: .

@@ -1,6 +1,6 @@
 import logging
 
-from app.api.users.auth_utils import PasswordManager
+from app.api.routers.auth.auth_utils import PasswordManager
 from app.schemas.users import SUser
 from app.service_layer.exceptions import (
     IncorrectEmailOrPasswordException,

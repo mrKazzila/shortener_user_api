@@ -1,3 +1,7 @@
-from app.api.routers_setup import routers_setup
+from app.api.middlewares import MIDDLEWARES
+from app.api.routers import ROUTERS
 
-__all__ = ("routers_setup",)
+__all__ = (
+    "MIDDLEWARES",
+    "ROUTERS",
+)
