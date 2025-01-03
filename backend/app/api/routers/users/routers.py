@@ -1,12 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 
-from app.api.routers import exceptions as api_exceptions
-from app.api.routers.dependencies import (
-    get_current_user_from_access_token,
-)
+from app.api.routers import exceptions
+from app.api.routers.dependencies import get_current_user_from_access_token
 from app.schemas.users import SUser
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
@@ -32,11 +30,14 @@ async def create_user(
         uow=uow,
         email=user_data.email,
     ):
-        raise api_exceptions.UserAlreadyExistException
+        raise exceptions.UserAlreadyExistException()
 
     await UsersServices.create_new_user(uow=uow, user_data=user_data)
 
-    return JSONResponse(content={"message": "User created"})
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"message": "User created"},
+    )
 
 
 @router.get("/test-protected2")
