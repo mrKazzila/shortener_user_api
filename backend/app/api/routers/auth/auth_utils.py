@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import SecretStr
 
-from app.api.exceptions import (
+from app.api.routers.exceptions import (
     DecodeTokenException,
     EmptyTokenException,
     ExpireTokenException,
@@ -79,7 +79,7 @@ class TokenManager:
     def get_refresh_token_from_cookies(cls, *, request: Request) -> str:
         if refresh_token := request.cookies.get(cls._jwt_cookie_name):
             return refresh_token
-        raise EmptyTokenException
+        raise EmptyTokenException()
 
     @classmethod
     def decode_token(cls, *, token: str) -> STokenData:
@@ -122,13 +122,13 @@ class TokenManager:
         token_type: STokenTypes,
     ) -> NoReturn:
         if payload_data.type != token_type:
-            raise IncorrectTokenTypeException
+            raise IncorrectTokenTypeException()
 
         if not payload_data.email:
-            raise IncorrectTokenFormatException
+            raise IncorrectTokenFormatException()
 
         if not payload_data.expiration:
-            raise IncorrectTokenFormatException
+            raise IncorrectTokenFormatException()
 
     @classmethod
     def validate_token_expire(cls, *, expire_time: int) -> NoReturn:

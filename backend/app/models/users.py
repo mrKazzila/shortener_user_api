@@ -1,15 +1,15 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.settings.database import Base
+from app.models.base import Base
 
 __all__ = ("Users",)
 
 
 class Users(Base):
-    """Model for users."""
+    """Model for auth."""
 
-    __tablename__ = "users"
+    __tablename__ = "auth"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(
