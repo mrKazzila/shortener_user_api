@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import SecretStr
 
-from api.routers.exceptions import (
+from app.api.routers.exceptions import (
     DecodeTokenException,
     EmptyTokenException,
     ExpireTokenException,

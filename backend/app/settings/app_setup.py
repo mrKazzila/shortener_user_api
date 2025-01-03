@@ -42,8 +42,12 @@ def create_app(
 
     tags_metadata = [
         {
-            "name": "urls",
-            "description": "Urls logic",
+            "name": "auth",
+            "description": "Auth logic",
+        },
+        {
+            "name": "users",
+            "description": "Users logic",
         },
         {
             "name": "healthcheck",
@@ -93,7 +97,7 @@ def middlewares_setup(*, app: FastAPI, middlewares: list) -> None:
 
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=settings().BASE_URL,
+            allow_origins="*",
             allow_credentials=True,
             allow_methods=["GET", "POST"],
             allow_headers=[

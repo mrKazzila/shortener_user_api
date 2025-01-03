@@ -4,7 +4,7 @@ from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.base import ABCRepository
-from app.settings.database import Base
+from app.models import Base
 
 __all__ = ("SQLAlchemyRepository",)
 

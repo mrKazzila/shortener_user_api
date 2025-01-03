@@ -3,7 +3,7 @@ from app.settings import create_app, middlewares_setup, routers_setup
 
 app = create_app(
     title="ShortenerUsersApi",
-    description="Simple API for url shortener users logic",
+    description="Simple API for url shortener auth logic",
     version="0.0.1",
     contact={
         "autor": "mrkazzila@gmail.com",
