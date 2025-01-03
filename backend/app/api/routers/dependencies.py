@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-from app.api.routers.exceptions import UserNotFoundException
 from app.api.routers.auth.auth_utils import TokenManager
+from app.api.routers.exceptions import UserNotFoundException
 from app.schemas.tokens import STokenData, STokenTypes
 from app.schemas.users import SUser
 from app.service_layer.services import UsersServices

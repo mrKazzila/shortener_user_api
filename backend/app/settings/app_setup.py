@@ -5,8 +5,6 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
-from app.settings.config import settings
-
 __all__ = (
     "create_app",
     "routers_setup",

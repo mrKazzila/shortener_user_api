@@ -25,12 +25,12 @@ router = APIRouter(
     response_model=dict[str, str],
 )
 async def create_user(
-        user_data: SUser,
-        uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
+    user_data: SUser,
+    uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
 ):
     if await UsersServices.get_user_from_db(
-            uow=uow,
-            email=user_data.email,
+        uow=uow,
+        email=user_data.email,
     ):
         raise api_exceptions.UserAlreadyExistException
 
@@ -41,7 +41,7 @@ async def create_user(
 
 @router.get("/test-protected2")
 async def test_protected_route(
-        current_user: dict = Depends(get_current_user_from_access_token),
+    current_user: dict = Depends(get_current_user_from_access_token),
 ):
     return {
         "message": "This is a test protected route",
