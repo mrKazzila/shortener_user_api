@@ -3,9 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 
-from app.api.routers import exceptions
-from app.api.routers.dependencies import get_current_user_from_access_token
-from app.schemas.users import SUser
+from app.api.schemas.users import SUser
+from app.exceptions.users import UserAlreadyExistException
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
@@ -30,7 +29,7 @@ async def create_user(
         uow=uow,
         email=user_data.email,
     ):
-        raise exceptions.UserAlreadyExistException()
+        raise UserAlreadyExistException()
 
     await UsersServices.create_new_user(uow=uow, user_data=user_data)
 
@@ -38,13 +37,3 @@ async def create_user(
         status_code=status.HTTP_201_CREATED,
         content={"message": "User created"},
     )
-
-
-@router.get("/test-protected2")
-async def test_protected_route(
-    current_user: dict = Depends(get_current_user_from_access_token),
-):
-    return {
-        "message": "This is a test protected route",
-        "user_info": current_user,
-    }

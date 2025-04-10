@@ -1,16 +1,12 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.routers import exceptions as api_exceptions
 from app.api.routers.auth.auth_utils import TokenManager
-from app.api.routers.dependencies import (
-    verify_refresh_token,
-)
-from app.schemas.tokens import STokenData, STokens
-from app.service_layer import exceptions as service_exceptions
+from app.api.routers.dependencies import verify_refresh_token
+from app.api.schemas.tokens import STokenData, STokens
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
@@ -30,32 +26,27 @@ async def login_user(
     form_user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
 ) -> STokens:
-    try:
-        await UsersServices.is_authenticate_user(
-            uow=uow,
-            form_email=form_user_data.username,
-            form_password=form_user_data.password,
-        )
+    logger.debug(f"Form data: {form_user_data.__dict__}")
 
-        token_pair = TokenManager.create_token_pair(
-            email=form_user_data.username,
-        )
+    await UsersServices.is_authenticate_user(
+        uow=uow,
+        form_email=form_user_data.username,
+        form_password=form_user_data.password,
+    )
 
-        TokenManager.set_token_to_cookie(
-            response=response,
-            refresh_token=token_pair.refresh_token,
-        )
+    token_pair = TokenManager.create_token_pair(
+        email=form_user_data.username,
+    )
 
-        return token_pair
+    TokenManager.set_token_to_cookie(
+        response=response,
+        refresh_token=token_pair.refresh_token,
+    )
 
-    except service_exceptions.UserNotFoundException:
-        raise api_exceptions.UserNotFoundException
-
-    except service_exceptions.IncorrectEmailOrPasswordException:
-        raise api_exceptions.IncorrectEmailOrPasswordException
-
-    except HTTPException as error_:
-        raise error_
+    return STokens(
+        access_token=token_pair.access_token,
+        refresh_token=token_pair.refresh_token,
+    )
 
 
 @router.post(
@@ -73,4 +64,7 @@ def token_refresh(
         refresh_token=new_token_pair.refresh_token,
     )
 
-    return new_token_pair
+    return STokens(
+        access_token=new_token_pair.access_token,
+        refresh_token=new_token_pair.refresh_token,
+    )

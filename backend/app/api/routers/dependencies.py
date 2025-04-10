@@ -5,9 +5,9 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
 from app.api.routers.auth.auth_utils import TokenManager
-from app.api.routers.exceptions import UserNotFoundException
-from app.schemas.tokens import STokenData, STokenTypes
-from app.schemas.users import SUser
+from app.api.schemas.tokens import STokenData, STokenTypes
+from app.api.schemas.users import SUser
+from app.exceptions.users import UserNotFoundException
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
@@ -34,7 +34,7 @@ async def get_current_user_from_access_token(
             email=payload_data.email,
         ):
             return user
-        raise UserNotFoundException
+        raise UserNotFoundException()
 
     except HTTPException as error_:
         raise error_

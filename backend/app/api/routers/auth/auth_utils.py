@@ -6,14 +6,14 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import SecretStr
 
-from app.api.routers.exceptions import (
+from app.dto.tokens import TokenDataDTO, TokensDTO, TokenTypes
+from app.exceptions.tokens import (
     DecodeTokenException,
     EmptyTokenException,
     ExpireTokenException,
     IncorrectTokenFormatException,
     IncorrectTokenTypeException,
 )
-from app.schemas.tokens import STokenData, STokens, STokenTypes
 from app.settings.config import settings
 
 __all__ = ("TokenManager", "PasswordManager")
@@ -71,8 +71,7 @@ class TokenManager:
             key=cls._jwt_cookie_name,
             value=refresh_token,
             httponly=True,
-            expires=360,
-            max_age=-1,
+            expires=3600,
         )
 
     @classmethod
@@ -82,7 +81,7 @@ class TokenManager:
         raise EmptyTokenException()
 
     @classmethod
-    def decode_token(cls, *, token: str) -> STokenData:
+    def decode_token(cls, *, token: str) -> TokenDataDTO:
         try:
             raw_token_data = jwt.decode(
                 token,
@@ -92,34 +91,37 @@ class TokenManager:
         except JWTError as error_:
             raise DecodeTokenException(detail=error_)
 
-        return STokenData(
+        return TokenDataDTO(
             email=raw_token_data.get("sub"),
             type=raw_token_data.get("type"),
             expiration=raw_token_data.get("exp"),
         )
 
     @classmethod
-    def create_token_pair(cls, *, email: str) -> STokens:
+    def create_token_pair(cls, *, email: str) -> TokensDTO:
         access_token = cls._create_token(
-            data={"sub": email, "type": STokenTypes.access},
+            data={"sub": email, "type": TokenTypes.access},
             expires_delta=timedelta(minutes=settings().ACCESS_TOKEN_EXPIRES),
         )
         refresh_token = cls._create_token(
-            data={"sub": email, "type": STokenTypes.refresh},
+            data={"sub": email, "type": TokenTypes.refresh},
             expires_delta=timedelta(minutes=settings().REFRESH_TOKEN_EXPIRES),
         )
 
-        return STokens(access_token=access_token, refresh_token=refresh_token)
+        return TokensDTO(
+            access_token=access_token,
+            refresh_token=refresh_token,
+        )
 
     @classmethod
-    def update_token_pair(cls, *, email: str) -> STokens:
+    def update_token_pair(cls, *, email: str) -> TokensDTO:
         return cls.create_token_pair(email=email)
 
     @staticmethod
     def validate_token_payload(
         *,
-        payload_data: STokenData,
-        token_type: STokenTypes,
+        payload_data: TokenDataDTO,
+        token_type: TokenTypes,
     ) -> NoReturn:
         if payload_data.type != token_type:
             raise IncorrectTokenTypeException()
@@ -133,7 +135,7 @@ class TokenManager:
     @classmethod
     def validate_token_expire(cls, *, expire_time: int) -> NoReturn:
         if cls._check_token_expire(token_expire_time=expire_time):
-            raise ExpireTokenException
+            raise ExpireTokenException()
 
     @classmethod
     def _create_token(cls, *, data: dict, expires_delta: timedelta) -> str:

@@ -1,7 +1,7 @@
 import logging
 
 from app.api.routers.auth.auth_utils import PasswordManager
-from app.schemas.users import SUser
+from app.dto.users import UserDTO
 from app.service_layer.exceptions import (
     IncorrectEmailOrPasswordException,
     UserNotFoundException,
@@ -19,7 +19,7 @@ class UsersServices:
         cls,
         *,
         uow: UnitOfWork,
-        user_data: SUser,
+        user_data: UserDTO,
     ) -> None:
         handel_user_data = cls._handel_user_data(user_data=user_data)
 
@@ -34,7 +34,7 @@ class UsersServices:
         *,
         uow: UnitOfWork,
         email: str,
-    ) -> SUser | None:
+    ) -> UserDTO | None:
         _reference = {"email": email}
 
         async with uow:
@@ -42,7 +42,10 @@ class UsersServices:
             result = await user_repo.get(reference=_reference)
 
         if result:
-            return SUser.model_validate(result)
+            return UserDTO(
+                email=result.email,
+                password=result.password,
+            )
         return None
 
     @classmethod
@@ -56,7 +59,7 @@ class UsersServices:
         user = await cls.get_user_from_db(uow=uow, email=form_email)
 
         if not user:
-            raise UserNotFoundException
+            raise UserNotFoundException()
 
         if is_valid_data := cls._check_user(
             user=user,
@@ -65,10 +68,10 @@ class UsersServices:
         ):
             return is_valid_data
 
-        raise IncorrectEmailOrPasswordException
+        raise IncorrectEmailOrPasswordException()
 
     @staticmethod
-    def _handel_user_data(user_data: SUser) -> dict[str, str]:
+    def _handel_user_data(user_data: UserDTO) -> dict[str, str]:
         data = user_data.dict()
         password = data.get("password")
         data["password"] = PasswordManager.hash_password(
@@ -78,7 +81,7 @@ class UsersServices:
         return data
 
     @staticmethod
-    def _check_user(user: SUser, email: str, password: str) -> bool:
+    def _check_user(user: UserDTO, email: str, password: str) -> bool:
         return user.email == email and PasswordManager.verify_password(
             plain_secret_password=password,
             hashed_pwd=user.password,
