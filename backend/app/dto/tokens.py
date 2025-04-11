@@ -18,18 +18,15 @@ class TokenTypes(StrEnum):
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class TokenBaseDTO:
+class AccessTokenDTO:
+    access_token: str
     token_type: str = "bearer"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class AccessTokenDTO(TokenBaseDTO):
-    access_token: str
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class RefreshTokenDTO(TokenBaseDTO):
+class RefreshTokenDTO:
     refresh_token: str
+    token_type: str = "bearer"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
