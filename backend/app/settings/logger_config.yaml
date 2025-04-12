@@ -3,10 +3,6 @@ disable_existing_loggers: false
 
 
 formatters:
-  json:
-    "()": "pythonjsonlogger.jsonlogger.JsonFormatter"
-    format: "%(asctime)s - %(levelname)s - %(module)s - %(funcName)s:%(lineno)d - %(message)s"
-
   my_stdout:
     format: "%(asctime)s - %(levelname)s - %(module)s - %(funcName)s:%(lineno)d - %(message)s"
 

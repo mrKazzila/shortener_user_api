@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 from fastapi import Response
 from jose import JWTError, jwt
@@ -118,11 +118,11 @@ class TokenManager:
 
     def _create_token(self, *, data: dict, expires_delta: timedelta) -> str:
         to_encode = {**data}
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
         to_encode.update({"exp": expire})
         return jwt.encode(to_encode, self._secret_key, self._algorithm)
 
     @staticmethod
     def _check_token_expire(*, token_expire_time: int) -> bool:
-        current_time = int(datetime.utcnow().timestamp())
+        current_time = int(datetime.now(UTC).timestamp())
         return current_time > token_expire_time
