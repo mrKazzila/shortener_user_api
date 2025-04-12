@@ -1,27 +1,44 @@
+import logging
 from typing import Self
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from app.exceptions.uow import ImproperUoWUsageError
 
 from app.adapters import UsersRepository
 from app.service_layer.unit_of_work.abc_uow import ABCUnitOfWork
-from app.settings.database import async_session_maker
 
 __all__ = ("UnitOfWork",)
 
+logger = logging.getLogger(__name__)
+NONE_OBJECT_ID = 0
+
 
 class UnitOfWork(ABCUnitOfWork):
-    __slots__ = ("session_factory",)
+    __slots__ = ("_session", "_users_repo")
 
-    def __init__(self) -> None:
-        self.session_factory = async_session_maker
-
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        self._session_factory = session_factory
         self._session = None
         self._users_repo = None
 
+    def __repr__(self) -> str:
+        session_id = id(self._session) if self._session else NONE_OBJECT_ID
+        users_repo_id = (
+            id(self.users_repo) if self._users_repo else NONE_OBJECT_ID
+        )
+
+        return (
+            f"[{self.__class__.__name__} | object_id={id(self)} | "
+            f"{users_repo_id=} | {session_id=}]"
+        )
+
     @property
     def session(self) -> AsyncSession:
-        if not self._session:
-            self._session = self.session_factory()
+        if self._session is None:
+            raise ImproperUoWUsageError()
         return self._session
 
     @property
@@ -31,13 +48,25 @@ class UnitOfWork(ABCUnitOfWork):
         return self._users_repo
 
     async def __aenter__(self) -> Self:
+        self._session = self._session_factory()
+        logger.debug("[x]  Start %r  [x]", self)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        await self.session.close()
+        if self._session is not None:
+            if exc_type is not None:
+                await self._session.rollback()
+
+            logger.debug("[x]  Closing %r  [x]", self)
+            await self._session.close()
+            self._session = None
+
+        logger.debug("[x]  Closed %r  [x]", self)
 
     async def commit(self) -> None:
+        logger.debug("[x]  Commit %r  [x]", self)
         await self.session.commit()
 
     async def rollback(self) -> None:
+        logger.debug("[x]  Rollback %r  [x]", self)
         await self.session.rollback()

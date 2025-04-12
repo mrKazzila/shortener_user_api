@@ -1,10 +1,11 @@
 from app.exceptions.base import BaseCustomException
+from http import HTTPStatus
 
 
 class BaseTokenException(BaseCustomException):
     def __init__(self, detail) -> None:
         super().__init__(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=HTTPStatus.UNAUTHORIZED,
             detail=detail,
         )
 

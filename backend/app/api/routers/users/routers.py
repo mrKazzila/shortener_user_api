@@ -1,18 +1,17 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, status
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
+from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
 from app.api.schemas.users import SUser
-from app.exceptions.users import UserAlreadyExistException
+from app.dto.users import UserDTO
 from app.service_layer.services import UsersServices
-from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
 
 __all__ = ("router",)
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
+    route_class=DishkaRoute,
 )
 
 
@@ -23,15 +22,14 @@ router = APIRouter(
 )
 async def create_user(
     user_data: SUser,
-    uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
+    user_service: FromDishka[UsersServices],
 ):
-    if await UsersServices.get_user_from_db(
-        uow=uow,
-        email=user_data.email,
-    ):
-        raise UserAlreadyExistException()
-
-    await UsersServices.create_new_user(uow=uow, user_data=user_data)
+    await user_service.create_new_user(
+        user_data=UserDTO(
+            email=str(user_data.email),
+            password=user_data.password.get_secret_value(),
+        ),
+    )
 
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,

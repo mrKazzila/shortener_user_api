@@ -21,7 +21,7 @@ class SQLAlchemyRepository(ABCRepository):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__} for model: {self.model}"
 
-    async def add(self, *, data: dict[str, int | str]) -> type(model):
+    async def add(self, *, data: dict[str, str | int]) -> type(model):
         """Add new entity."""
         _statement = insert(self.model).values(**data).returning(self.model)
         statement_result = await self.session.execute(statement=_statement)
@@ -31,7 +31,7 @@ class SQLAlchemyRepository(ABCRepository):
     async def get(
         self,
         *,
-        reference: dict[str, int | str],
+        reference: dict[str, str | int],
     ) -> type(model) | None:
         """Get entity by some reference."""
         _statement = select(self.model).filter_by(**reference)
@@ -39,7 +39,7 @@ class SQLAlchemyRepository(ABCRepository):
 
         return statement_result.scalar_one_or_none()
 
-    async def update(self, *, model_id: int, **update_data: int | str) -> None:
+    async def update(self, *, model_id: int, **update_data: str | int) -> None:
         """Update entity some data."""
         _statement = (
             update(self.model).filter_by(id=model_id).values(**update_data)

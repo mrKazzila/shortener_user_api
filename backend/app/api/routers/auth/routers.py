@@ -1,14 +1,15 @@
 import logging
 from typing import Annotated
 
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.routers.auth.auth_utils import TokenManager
-from app.api.routers.dependencies import verify_refresh_token
-from app.api.schemas.tokens import STokenData, STokens
+from app.api.routers.auth._types import QueryRefreshToken
+from app.api.schemas.tokens import STokens
+from app.dto.users import UserFormDataDTO
 from app.service_layer.services import UsersServices
-from app.service_layer.unit_of_work import ABCUnitOfWork, UnitOfWork
+from app.utils import TokenManager
 
 __all__ = ("router",)
 
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/auth",
     tags=["auth"],
+    route_class=DishkaRoute,
 )
 
 
@@ -24,21 +26,21 @@ router = APIRouter(
 async def login_user(
     response: Response,
     form_user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    uow: Annotated[type(ABCUnitOfWork), Depends(UnitOfWork)],
+    user_service: FromDishka[UsersServices],
+    token_manager: FromDishka[TokenManager],
 ) -> STokens:
-    logger.debug(f"Form data: {form_user_data.__dict__}")
-
-    await UsersServices.is_authenticate_user(
-        uow=uow,
-        form_email=form_user_data.username,
-        form_password=form_user_data.password,
+    await user_service.is_authenticate_user(
+        form_data=UserFormDataDTO(
+            email=form_user_data.username,
+            password=form_user_data.password,
+        ),
     )
 
-    token_pair = TokenManager.create_token_pair(
+    token_pair = token_manager.create_token_pair(
         email=form_user_data.username,
     )
 
-    TokenManager.set_token_to_cookie(
+    token_manager.set_token_to_cookie(
         response=response,
         refresh_token=token_pair.refresh_token,
     )
@@ -55,11 +57,16 @@ async def login_user(
 )
 def token_refresh(
     response: Response,
-    refresh_token: STokenData = Depends(verify_refresh_token),
+    token_manager: FromDishka[TokenManager],
+    token: QueryRefreshToken,
 ) -> STokens:
-    new_token_pair = TokenManager.update_token_pair(email=refresh_token.email)
+    token_data = token_manager.verify_refresh_token(token=token)
 
-    TokenManager.set_token_to_cookie(
+    new_token_pair = token_manager.update_token_pair(
+        email=token_data.email,
+    )
+
+    token_manager.set_token_to_cookie(
         response=response,
         refresh_token=new_token_pair.refresh_token,
     )

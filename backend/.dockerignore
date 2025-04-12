@@ -1,7 +1,10 @@
 # ===== Project =====
-**README.md
+**README
+**.md
 .coverage
-Makefile
+justfile
+uv.lock
+pyproject.toml
 .DS_Store
 
 # ===== Docker =====

@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from app.exceptions.base import BaseCustomException
 
 
@@ -6,20 +8,20 @@ class BaseUserException(BaseCustomException):
         super().__init__(
             status_code=status_code
             if status_code
-            else status.HTTP_401_UNAUTHORIZED,
+            else HTTPStatus.UNAUTHORIZED,
             detail=detail,
         )
 
 
 class UserNotFoundException(BaseUserException):
     def __init__(self) -> None:
-        super().__init__(status_code=status.HTTP_404_NOT_FOUND)
+        super().__init__(status_code=HTTPStatus.NOT_FOUND)
 
 
 class UserAlreadyExistException(BaseUserException):
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=HTTPStatus.CONFLICT,
             detail="User already exist.",
         )
 
@@ -27,6 +29,6 @@ class UserAlreadyExistException(BaseUserException):
 class IncorrectEmailOrPasswordException(BaseUserException):
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=HTTPStatus.UNAUTHORIZED,
             detail="Incorrect email or password.",
         )

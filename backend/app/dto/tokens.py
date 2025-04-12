@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
-from pydantic import EmailStr
-
 __all__ = (
     "AccessTokenDTO",
     "RefreshTokenDTO",
     "TokensDTO",
-    "TokenTypesDTO",
+    "TokenTypes",
     "TokenDataDTO",
 )
 
@@ -38,6 +36,6 @@ class TokensDTO:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class TokenDataDTO:
-    email: EmailStr
+    email: str
     type: TokenTypes
     expiration: int
