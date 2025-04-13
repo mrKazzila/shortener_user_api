@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from asyncpg import Connection
@@ -11,8 +12,12 @@ from sqlalchemy.pool import NullPool
 
 from app.settings.config import settings
 
-__all__ = ("async_session_maker", "ENGINE_URL")
+__all__ = (
+    "async_session_maker",
+    "ENGINE_URL",
+)
 
+logger = logging.getLogger(__name__)
 ENGINE_URL: str = str(settings().dsn)
 
 
@@ -25,20 +30,27 @@ class SQLAlchemyConnection(Connection):
         return f"__asyncpg_{prefix}_{uuid.uuid4()}__"
 
 
-engine: AsyncEngine = create_async_engine(
-    url=ENGINE_URL,
-    echo=True,
-    connect_args={
-        "statement_cache_size": 0,
-        "prepared_statement_cache_size": 0,
-        "connection_class": SQLAlchemyConnection,
-    },
-    pool_pre_ping=True,
-    poolclass=NullPool,
-)
+def engine_factory() -> AsyncEngine | None:
+    logger.debug("Create engine")
+    try:
+        return create_async_engine(
+            url=ENGINE_URL,
+            echo=True,
+            connect_args={
+                "statement_cache_size": 0,  # required by asyncpg
+                "prepared_statement_cache_size": 0,  # required by asyncpg
+                "connection_class": SQLAlchemyConnection,
+            },
+            pool_pre_ping=True,
+            poolclass=NullPool,
+        )
+    except Exception as error_:
+        logger.error("Error: %s", error_)
+        return None
+
 
 async_session_maker: async_sessionmaker[AsyncSession] = async_sessionmaker(
-    bind=engine,
+    bind=engine_factory(),
     class_=AsyncSession,
     expire_on_commit=False,
 )

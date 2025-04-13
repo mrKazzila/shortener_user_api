@@ -92,16 +92,13 @@ def middlewares_setup(*, app: FastAPI, middlewares: list) -> None:
         logger.info("Start middlewares setup")
 
         [app.add_middleware(middleware) for middleware in middlewares]
-
         app.add_middleware(
             CORSMiddleware,
-            allow_origins="*",
+            allow_origins=["*"],
             allow_credentials=True,
-            allow_methods=["GET", "POST"],
-            allow_headers=[
-                "Content-Type",
-                "Access-Control-Allow-Origin",
-            ],
+            allow_methods=["*"],
+            allow_headers=["*"],
+            expose_headers=["*"],
         )
 
         logger.info("Middlewares setup successfully done")

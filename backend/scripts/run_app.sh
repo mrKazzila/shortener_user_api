@@ -1,10 +1,8 @@
 #!/bin/bash
 
 current_dir=$(pwd)
-tree_=$(ls -a)
 
 echo "Current dir: $current_dir"
-echo "tree_: $tree_"
 
 if [ "$MODE" == "DEV" ]; then
     echo "Running uvicorn in DEV mode"

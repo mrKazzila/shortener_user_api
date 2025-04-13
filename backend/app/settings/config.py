@@ -13,25 +13,14 @@ __all__ = ("settings",)
 logger = logging.getLogger(__name__)
 
 
-class ProjectBaseSettings(BaseSettings):
-    __ROOT_DIR_ID: int = 2
-
-    model_config = SettingsConfigDict(
-        env_file=Path(__file__)
-        .resolve()
-        .parents[__ROOT_DIR_ID]
-        .joinpath("env/.env"),
-    )
-
-
-class Settings(ProjectBaseSettings):
+class Settings(BaseSettings):
     """Main settings for project."""
 
     APP_NAME: str
     MODE: str
 
     ACCESS_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(25)]
-    REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(100), Le(360)]
+    REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(100), Le(3600)]
     SECRET_KEY: str
     ALGORITHM: str
     JWT_COOKIE_NAME: str
@@ -56,6 +45,16 @@ class Settings(ProjectBaseSettings):
             port=self.DB_PORT,
             path=f"{self.DB_NAME}",
         )
+
+
+    __ROOT_DIR_ID: int = 2
+
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__)
+        .resolve()
+        .parents[__ROOT_DIR_ID]
+        .joinpath("env/.env"),
+    )
 
 
 @lru_cache

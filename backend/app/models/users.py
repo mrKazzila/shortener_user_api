@@ -7,9 +7,9 @@ __all__ = ("Users",)
 
 
 class Users(Base):
-    """Model for auth."""
+    """Model for users."""
 
-    __tablename__ = "auth"
+    __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(
