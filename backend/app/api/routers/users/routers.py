@@ -2,7 +2,7 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
-from app.api.schemas.users import SUser
+from api.routers.schemas.users import SUser
 from app.dto.users import UserDTO
 from app.service_layer.services import UsersServices
 

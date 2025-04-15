@@ -5,7 +5,7 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.schemas.tokens import SRefreshTokenRequest, STokens
+from api.routers.schemas.tokens import SRefreshTokenRequest, STokens
 from app.dto.users import UserFormDataDTO
 from app.service_layer.services import UsersServices
 from app.utils import TokenManager
