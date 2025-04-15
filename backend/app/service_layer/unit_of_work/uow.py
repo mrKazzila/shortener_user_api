@@ -2,9 +2,9 @@ import logging
 from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from app.exceptions.uow import ImproperUoWUsageError
 
 from app.adapters import UsersRepository
+from app.exceptions.uow import ImproperUoWUsageError
 from app.service_layer.unit_of_work.abc_uow import ABCUnitOfWork
 
 __all__ = ("UnitOfWork",)

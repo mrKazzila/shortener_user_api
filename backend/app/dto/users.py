@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass
 from typing import Self
 
 __all__ = ("UserDTO", "UserFromDBDTO", "UserFormDataDTO")
