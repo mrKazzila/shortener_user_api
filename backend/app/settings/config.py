@@ -46,7 +46,6 @@ class Settings(BaseSettings):
             path=f"{self.DB_NAME}",
         )
 
-
     __ROOT_DIR_ID: int = 2
 
     model_config = SettingsConfigDict(
