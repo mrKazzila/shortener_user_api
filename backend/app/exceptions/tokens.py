@@ -1,5 +1,6 @@
-from app.exceptions.base import BaseCustomException
 from http import HTTPStatus
+
+from app.exceptions.base import BaseCustomException
 
 
 class BaseTokenException(BaseCustomException):
