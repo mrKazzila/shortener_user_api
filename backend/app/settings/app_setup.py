@@ -1,6 +1,7 @@
+import gc
 import logging
 from contextlib import asynccontextmanager
-import gc
+
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
