@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-
+import gc
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
+    gc.set_threshold(10_000, 30, 10)
     logger.info("Service started")
 
     yield
