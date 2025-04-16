@@ -6,10 +6,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONHASHSEED=random
 
 WORKDIR /app/
-# RUN apt-get update && \
-#     apt-get install --no-install-recommends -y && \
-#     apt-get clean && \
-#     rm -rf /var/lib/apt/lists/*
 
 # ===================
 FROM base as builder
