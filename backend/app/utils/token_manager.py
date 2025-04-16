@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime, timedelta
 
 from fastapi import Response
@@ -12,6 +13,8 @@ from app.exceptions.tokens import (
 )
 from app.settings.config import settings
 
+logger = logging.getLogger(__name__)
+
 
 class TokenManager:
     __slots__ = (
@@ -23,13 +26,11 @@ class TokenManager:
     )
 
     def __init__(self):
-        _settings = settings()
-
-        self._secret_key = _settings.SECRET_KEY
-        self._algorithm = _settings.ALGORITHM
-        self._jwt_cookie_name = _settings.JWT_COOKIE_NAME
-        self._access_token_expires = _settings.ACCESS_TOKEN_EXPIRES
-        self._refresh_token_expires = _settings.REFRESH_TOKEN_EXPIRES
+        self._secret_key = settings.SECRET_KEY
+        self._algorithm = settings.ALGORITHM
+        self._jwt_cookie_name = settings.JWT_COOKIE_NAME
+        self._access_token_expires = settings.ACCESS_TOKEN_EXPIRES
+        self._refresh_token_expires = settings.REFRESH_TOKEN_EXPIRES
 
     def set_token_to_cookie(
         self,
@@ -120,6 +121,7 @@ class TokenManager:
         to_encode = {**data}
         expire = datetime.now(UTC) + expires_delta
         to_encode.update({"exp": expire})
+
         return jwt.encode(to_encode, self._secret_key, self._algorithm)
 
     @staticmethod
