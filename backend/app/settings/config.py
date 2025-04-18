@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     MODE: str
 
     ACCESS_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(90)]
-    REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(100), Le(3600)]
+    REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(3600)]
     SECRET_KEY: str
     ALGORITHM: str
     JWT_COOKIE_NAME: str
