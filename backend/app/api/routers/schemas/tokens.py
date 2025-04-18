@@ -1,8 +1,6 @@
-import re
 from enum import StrEnum
-from typing import Annotated
 
-from pydantic import BaseModel, EmailStr, Field, StringConstraints
+from pydantic import BaseModel, EmailStr
 
 __all__ = (
     "SAccessToken",
@@ -14,18 +12,8 @@ __all__ = (
 )
 
 
-_JWT_REGEX = re.compile(
-    r"^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$",
-    re.IGNORECASE,
-)
-_JWTString = Annotated[
-    str,
-    StringConstraints(pattern=_JWT_REGEX.pattern),
-]
-
-
 class SRefreshTokenRequest(BaseModel):
-    token: _JWTString = Field(description="Refresh token")
+    token: str
 
 
 class STokenBase(BaseModel):

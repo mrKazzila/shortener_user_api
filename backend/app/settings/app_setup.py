@@ -1,3 +1,4 @@
+import gc
 import logging
 from contextlib import asynccontextmanager
 
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
+    gc.set_threshold(10_000, 30, 10)
     logger.info("Service started")
 
     yield

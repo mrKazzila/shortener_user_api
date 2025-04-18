@@ -49,8 +49,8 @@ async def login_user(
     summary="Refresh token",
 )
 def token_refresh(
-    token_manager: FromDishka[TokenManager],
     token: SRefreshTokenRequest,
+    token_manager: FromDishka[TokenManager],
 ) -> STokens:
     token_data = token_manager.verify_refresh_token(token=token.token)
 

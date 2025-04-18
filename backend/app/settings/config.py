@@ -1,5 +1,4 @@
 import logging
-from functools import lru_cache
 from pathlib import Path
 from sys import exit
 from typing import Annotated, cast
@@ -19,8 +18,8 @@ class Settings(BaseSettings):
     APP_NAME: str
     MODE: str
 
-    ACCESS_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(25)]
-    REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(100), Le(3600)]
+    ACCESS_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(90)]
+    REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(3600)]
     SECRET_KEY: str
     ALGORITHM: str
     JWT_COOKIE_NAME: str
@@ -56,8 +55,7 @@ class Settings(BaseSettings):
     )
 
 
-@lru_cache
-def settings() -> Settings:
+def get_settings() -> Settings:
     logger.info("Loading settings from env")
 
     try:
@@ -66,3 +64,6 @@ def settings() -> Settings:
     except ValidationError as error_:
         logger.error("Error at loading settings from env. %s", error_)
         exit(error_)
+
+
+settings = get_settings()
