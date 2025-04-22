@@ -2,7 +2,8 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
-from app.api.routers.schemas.users import SUser
+from app.api.routers.schemas.users import SRequestUser, SResponseUserDB
+from app.api.routers.users._types import QueryUserID
 from app.dto.users import UserDTO
 from app.service_layer.services import UsersServices
 
@@ -21,7 +22,7 @@ router = APIRouter(
     response_model=dict[str, str],
 )
 async def create_user(
-    user_data: SUser,
+    user_data: SRequestUser,
     user_service: FromDishka[UsersServices],
 ):
     await user_service.create_new_user(
@@ -35,3 +36,15 @@ async def create_user(
         status_code=status.HTTP_201_CREATED,
         content={"message": "User created"},
     )
+
+
+@router.get(
+    "/",
+    summary="Get user info",
+)
+async def get_user(
+    user_id: QueryUserID,
+    user_service: FromDishka[UsersServices],
+) -> SResponseUserDB:
+    user_data = await user_service.get_user_by_id(user_id=user_id)
+    return SResponseUserDB(**user_data.to_dict())

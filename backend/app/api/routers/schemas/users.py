@@ -1,12 +1,18 @@
+from datetime import datetime
+from uuid import UUID
+
 from pydantic import BaseModel, EmailStr, SecretStr
 
-__all__ = ("SUser", "SUserDB")
+__all__ = ("SRequestUser", "SResponseUserDB")
 
 
-class SUser(BaseModel):
+class SRequestUser(BaseModel):
     email: EmailStr
     password: SecretStr
 
 
-class SUserDB(SUser):
-    id: int
+class SResponseUserDB(BaseModel):
+    id: UUID
+    is_active: bool
+    is_email_verified: bool
+    created_at: datetime

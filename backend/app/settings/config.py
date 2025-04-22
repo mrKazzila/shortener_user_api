@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
     JWT_COOKIE_NAME: str
+    GOOGLE_CLIENT_ID: str = "4/0Ab_5qlkZeAMFVT8r3WETi5KxIA2IPQ1NzR-xPk4CovBe6mKOuH5kLkHg6ZMkdhe_Mnq7lQ"
 
     POSTGRES_VERSION: str
 

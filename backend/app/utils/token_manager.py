@@ -1,10 +1,15 @@
 import logging
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
-from fastapi import Response
 from jose import JWTError, jwt
 
-from app.dto.tokens import TokenDataDTO, TokensDTO, TokenTypes
+from app.dto.tokens import (
+    TokenDataDTO,
+    TokensDTO,
+    TokenTypes,
+    UserTokenDTO,
+)
 from app.exceptions.tokens import (
     DecodeTokenException,
     ExpireTokenException,
@@ -25,25 +30,12 @@ class TokenManager:
         "_refresh_token_expires",
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._secret_key = settings.SECRET_KEY
         self._algorithm = settings.ALGORITHM
         self._jwt_cookie_name = settings.JWT_COOKIE_NAME
         self._access_token_expires = settings.ACCESS_TOKEN_EXPIRES
         self._refresh_token_expires = settings.REFRESH_TOKEN_EXPIRES
-
-    def set_token_to_cookie(
-        self,
-        *,
-        response: Response,
-        refresh_token: str,
-    ) -> None:
-        response.set_cookie(
-            key=self._jwt_cookie_name,
-            value=refresh_token,
-            httponly=True,
-            expires=3600,
-        )
 
     def verify_refresh_token(self, *, token: str) -> TokenDataDTO:
         try:
@@ -53,7 +45,6 @@ class TokenManager:
                 payload_data=payload_data,
                 token_type=TokenTypes.refresh,
             )
-
             self.validate_token_expire(
                 expire_time=payload_data.expiration,
             )
@@ -74,18 +65,34 @@ class TokenManager:
             raise DecodeTokenException(detail=str(error))
 
         return TokenDataDTO(
-            email=raw_token_data.get("sub"),
+            id=UUID(raw_token_data.get("sub", None)),
+            is_active=raw_token_data.get("is_active"),
             type=raw_token_data.get("type"),
             expiration=raw_token_data.get("exp"),
         )
 
-    def create_token_pair(self, *, email: str) -> TokensDTO:
+    def create_token_pair(
+        self,
+        *,
+        user_data: UserTokenDTO,
+    ) -> TokensDTO:
+        base_token_data = {
+            "sub": str(user_data.id),
+            "is_active": user_data.is_active,
+        }
+
         access_token = self._create_token(
-            data={"sub": email, "type": TokenTypes.access},
+            data={
+                **base_token_data,
+                "type": TokenTypes.access,
+            },
             expires_delta=timedelta(minutes=self._access_token_expires),
         )
         refresh_token = self._create_token(
-            data={"sub": email, "type": TokenTypes.refresh},
+            data={
+                **base_token_data,
+                "type": TokenTypes.refresh,
+            },
             expires_delta=timedelta(minutes=self._refresh_token_expires),
         )
 
@@ -94,8 +101,12 @@ class TokenManager:
             refresh_token=refresh_token,
         )
 
-    def update_token_pair(self, *, email: str) -> TokensDTO:
-        return self.create_token_pair(email=email)
+    def update_token_pair(
+        self,
+        *,
+        user_token_data: UserTokenDTO,
+    ) -> TokensDTO:
+        return self.create_token_pair(user_data=user_token_data)
 
     @staticmethod
     def validate_token_payload(
@@ -106,7 +117,10 @@ class TokenManager:
         if payload_data.type != token_type:
             raise IncorrectTokenTypeException()
 
-        if not payload_data.email:
+        if not payload_data.id:
+            raise IncorrectTokenFormatException()
+
+        if not payload_data.is_active:
             raise IncorrectTokenFormatException()
 
         if not payload_data.expiration:

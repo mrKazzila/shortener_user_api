@@ -32,3 +32,11 @@ class IncorrectEmailOrPasswordException(BaseUserException):
             status_code=HTTPStatus.UNAUTHORIZED,
             detail="Incorrect email or password.",
         )
+
+
+class OAuthUserPasswordException(BaseUserException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="OAuth users must use provider login.",
+        )

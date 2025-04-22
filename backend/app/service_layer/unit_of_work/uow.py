@@ -4,7 +4,6 @@ from typing import Self
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.adapters import UsersRepository
-from app.exceptions.uow import ImproperUoWUsageError
 from app.service_layer.unit_of_work.abc_uow import ABCUnitOfWork
 
 __all__ = ("UnitOfWork",)
@@ -38,7 +37,7 @@ class UnitOfWork(ABCUnitOfWork):
     @property
     def session(self) -> AsyncSession:
         if self._session is None:
-            raise ImproperUoWUsageError()
+            self._session = self._session_factory()
         return self._session
 
     @property

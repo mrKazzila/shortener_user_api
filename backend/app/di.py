@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import UnitOfWork
 from app.settings.database import async_session_maker
-from app.utils import PasswordManager, TokenManager
+from app.utils import GoogleAuthManager, PasswordManager, TokenManager
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,10 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.APP)
     def provide_token_manager(self) -> TokenManager:
         return TokenManager()
+
+    @provide(scope=Scope.APP)
+    def provide_google_auth_service(self) -> GoogleAuthManager:
+        return GoogleAuthManager()
 
     @provide(scope=Scope.APP)
     def provide_password_manager(self) -> PasswordManager:

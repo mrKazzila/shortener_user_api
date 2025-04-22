@@ -1,16 +1,24 @@
 import logging
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
-from app.dto.users import UserDTO, UserFormDataDTO
+from app.dto.auth import AuthUserDTO
+from app.dto.users import (
+    CreatedUserDTO,
+    UserDTO,
+    UserFormDataDTO,
+    UserFromDBDTO,
+)
 from app.exceptions.users import (
     IncorrectEmailOrPasswordException,
+    OAuthUserPasswordException,
     UserAlreadyExistException,
     UserNotFoundException,
 )
 from app.utils import PasswordManager
 
 if TYPE_CHECKING:
-    from app.adapters.domain.users_repository import UsersRepository
     from app.service_layer.unit_of_work import UnitOfWork
     from app.utils import PasswordManager
 
@@ -37,79 +45,139 @@ class UsersServices:
         self,
         *,
         user_data: UserDTO,
-    ) -> None:
+    ) -> CreatedUserDTO:
+        if _ := await self.uow.users_repo.get(
+            reference={"email": user_data.email},
+        ):
+            raise UserAlreadyExistException()
+
+        if not user_data.is_oauth and not user_data.password:
+            raise ValueError("Password is required for non-OAuth users")
+
+        hashed_password = (
+            self.password_manager.hash_password(
+                password=user_data.password,
+            )
+            if user_data.password
+            else None
+        )
+
+        user_id = uuid4()
+        user_dict = self._new_user_dict_object(
+            user_id=user_id,
+            password=hashed_password,
+            user_data=user_data,
+        )
+
         async with self.uow as transaction:
             user_repo = transaction.users_repo
-
-            if await self.get_user_from_db(
-                user_repo=user_repo,
-                email=user_data.email,
-            ):
-                raise UserAlreadyExistException()
-
-            handel_user_data: UserDTO = self._handel_user_data(
-                user_data=user_data,
-            )
-
-            await user_repo.add(data=handel_user_data.to_dict())
+            await user_repo.add(data=user_dict)
             await transaction.commit()
 
-    async def is_authenticate_user(
+        return CreatedUserDTO(
+            id=user_id,
+            is_active=user_data.is_active,
+        )
+
+    @staticmethod
+    def _new_user_dict_object(
+        *,
+        user_id: UUID,
+        password: str | None,
+        user_data: UserDTO,
+    ) -> dict[str, str | bool | datetime | UUID | None]:
+        user_dict = user_data.to_dict()
+        user_dict.update(
+            {
+                "id": user_id,
+                "password": password,
+                "created_at": datetime.now(UTC),
+                "is_email_verified": user_data.is_oauth,
+            },
+        )
+
+        return user_dict
+
+    async def authenticate_user(
         self,
         *,
         form_data: UserFormDataDTO,
-    ) -> bool:
-        async with self.uow as transaction:
-            user_repo = transaction.users_repo
-
-            user = await self.get_user_from_db(
-                user_repo=user_repo,
-                email=form_data.email,
-            )
-
-        if not user:
-            raise UserNotFoundException()
-
-        if is_valid_data := self._check_user(
-            user=user,
-            user_from_form=form_data,
+    ) -> AuthUserDTO:
+        if user := await self.uow.users_repo.get(
+            reference={"email": form_data.email},
         ):
-            return is_valid_data
+            if user.is_oauth:
+                raise OAuthUserPasswordException()
 
-        raise IncorrectEmailOrPasswordException()
+            if not self._check_user_credentials(
+                user=user,
+                form_data=form_data,
+            ):
+                raise IncorrectEmailOrPasswordException()
 
-    @staticmethod
-    async def get_user_from_db(
-        *,
-        user_repo: "UsersRepository",
-        email: str,
-    ) -> UserDTO | None:
-        _reference = {"email": email}
+            # TODO: UPDATE LAST LOGIN FOR USER
 
-        if result := await user_repo.get(reference=_reference):
-            return UserDTO(
-                email=result.email,
-                password=result.password,
+            return AuthUserDTO(
+                id=user.id,
+                is_active=user.is_active,
             )
-        return None
 
-    def _handel_user_data(self, *, user_data: UserDTO) -> UserDTO:
-        hashed_password = self.password_manager.hash_password(
-            password=user_data.password,
-        )
-        return UserDTO(
-            email=user_data.email,
-            password=hashed_password,
-        )
+        raise UserNotFoundException()
 
-    def _check_user(
+    async def update_last_login(self, email: str) -> None:
+        async with self.uow as transaction:
+            await transaction.users_repo.update(
+                reference={"email": email},
+                data={"last_login": datetime.utcnow()},
+            )
+            await transaction.commit()
+
+    async def get_user_by_id(self, *, user_id: UUID) -> UserFromDBDTO:
+        if user := await self.uow.users_repo.get(
+            reference={"id": str(user_id)},
+        ):
+            return UserFromDBDTO(
+                id=user.id,
+                is_active=user.is_active,
+                is_email_verified=user.is_email_verified,
+                created_at=user.created_at,
+            )
+
+        raise UserNotFoundException()
+
+    def _check_user_credentials(
         self,
         *,
         user: UserDTO,
-        user_from_form: UserFormDataDTO,
+        form_data: UserFormDataDTO,
     ) -> bool:
-        is_valid_pass = self.password_manager.verify_password(
-            plain_password=user_from_form.password,
-            hashed_pwd=user.password,
+        if not user.password or not form_data.password:
+            return False
+
+        return (
+            user.email == form_data.email
+            and self.password_manager.verify_password(
+                plain_password=form_data.password,
+                hashed_pwd=user.password,
+            )
         )
-        return user.email == user_from_form.email and is_valid_pass
+
+    async def deactivate_user(self, email: str) -> None:
+        async with self.uow as transaction:
+            await transaction.users_repo.update(
+                reference={"email": email},
+                data={
+                    "is_active": False,
+                    "is_deleted": True,
+                    "email": f"deleted_{int(datetime.now(UTC).timestamp())}_{email}",
+                },
+            )
+            await transaction.commit()
+
+    async def verify_user_email(self, email: str) -> None:
+        async with self.uow as transaction:
+            await transaction.users_repo.update(
+                reference={"email": email},
+                data={"is_email_verified": True},
+            )
+            await transaction.commit()

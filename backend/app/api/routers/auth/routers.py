@@ -5,10 +5,15 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.routers.schemas.tokens import SRefreshTokenRequest, STokens
-from app.dto.users import UserFormDataDTO
+from app.api.routers.schemas.tokens import (
+    SRequestGoogleAuth,
+    SRequestRefreshToken,
+    SResponseTokens,
+)
+from app.dto.tokens import UserTokenDTO
+from app.dto.users import UserDTO, UserFormDataDTO
 from app.service_layer.services import UsersServices
-from app.utils import TokenManager
+from app.utils import GoogleAuthManager, TokenManager
 
 __all__ = ("router",)
 
@@ -26,8 +31,8 @@ async def login_user(
     form_user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user_service: FromDishka[UsersServices],
     token_manager: FromDishka[TokenManager],
-) -> STokens:
-    await user_service.is_authenticate_user(
+) -> SResponseTokens:
+    user = await user_service.authenticate_user(
         form_data=UserFormDataDTO(
             email=form_user_data.username,
             password=form_user_data.password,
@@ -35,30 +40,67 @@ async def login_user(
     )
 
     token_pair = token_manager.create_token_pair(
-        email=form_user_data.username,
+        user_data=UserTokenDTO(
+            id=user.id,
+            is_active=user.is_active,
+        ),
     )
 
-    return STokens(
+    return SResponseTokens(
         access_token=token_pair.access_token,
         refresh_token=token_pair.refresh_token,
     )
 
 
-@router.post(
-    "/refresh",
-    summary="Refresh token",
-)
-def token_refresh(
-    token: SRefreshTokenRequest,
+@router.post("/google")
+async def login_with_google(
+    google_data: SRequestGoogleAuth,
+    google_auth: FromDishka[GoogleAuthManager],
+    user_service: FromDishka[UsersServices],
     token_manager: FromDishka[TokenManager],
-) -> STokens:
+) -> SResponseTokens:
+    google_user = await google_auth.authenticate_token(
+        token=google_data.token,
+    )
+
+    user = await user_service.create_new_user(
+        user_data=UserDTO(
+            email=google_user.email,
+            password=google_user.password,
+            is_email_verified=google_user.is_email_verified,
+            is_oauth=google_user.is_oauth,
+            oauth_provider=google_user.provider,
+        ),
+    )
+
+    token_pair = token_manager.create_token_pair(
+        user_data=UserTokenDTO(
+            id=user.id,
+            is_active=user.is_active,
+        ),
+    )
+
+    return SResponseTokens(
+        access_token=token_pair.access_token,
+        refresh_token=token_pair.refresh_token,
+    )
+
+
+@router.post("/refresh")
+def token_refresh(
+    token: SRequestRefreshToken,
+    token_manager: FromDishka[TokenManager],
+) -> SResponseTokens:
     token_data = token_manager.verify_refresh_token(token=token.token)
 
     new_token_pair = token_manager.update_token_pair(
-        email=token_data.email,
+        user_token_data=UserTokenDTO(
+            id=token_data.id,
+            is_active=token_data.is_active,
+        ),
     )
 
-    return STokens(
+    return SResponseTokens(
         access_token=new_token_pair.access_token,
         refresh_token=new_token_pair.refresh_token,
     )

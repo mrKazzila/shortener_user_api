@@ -1,30 +1,18 @@
 from dataclasses import dataclass
 from enum import StrEnum
+from uuid import UUID
 
 __all__ = (
-    "AccessTokenDTO",
-    "RefreshTokenDTO",
+    "TokenDataDTO",
     "TokensDTO",
     "TokenTypes",
-    "TokenDataDTO",
+    "UserTokenDTO",
 )
 
 
 class TokenTypes(StrEnum):
     access = "access"
     refresh = "refresh"
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AccessTokenDTO:
-    access_token: str
-    token_type: str = "bearer"
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class RefreshTokenDTO:
-    refresh_token: str
-    token_type: str = "bearer"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -35,7 +23,12 @@ class TokensDTO:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class TokenDataDTO:
-    email: str
+class UserTokenDTO:
+    id: UUID
+    is_active: bool
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class TokenDataDTO(UserTokenDTO):
     type: TokenTypes
     expiration: int
