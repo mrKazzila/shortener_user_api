@@ -24,6 +24,7 @@ dependencies = [
     "passlib>=1.7.4",
     "google-auth>=2.39.0",
     "google-auth-oauthlib>=1.2.1",
+    "orjson>=3.10.16",
 ]
 
 [project.optional-dependencies]
