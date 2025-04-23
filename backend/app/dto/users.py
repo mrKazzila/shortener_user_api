@@ -34,9 +34,14 @@ class UserFormDataDTO:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class UserFromDBDTO:
     id: UUID
+    email: str
+    password: str
     is_active: bool
     is_email_verified: bool
+    is_oauth: bool
     created_at: datetime
+    last_login: datetime | None
+    deactivated_at: datetime | None
 
-    def to_dict(self: Self) -> dict[str, str | bool | datetime]:
+    def to_dict(self: Self) -> dict[str, str | bool | datetime | None]:
         return asdict(self)

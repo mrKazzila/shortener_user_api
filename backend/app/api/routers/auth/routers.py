@@ -13,7 +13,7 @@ from app.api.routers.schemas.tokens import (
 from app.dto.tokens import UserTokenDTO
 from app.dto.users import UserDTO, UserFormDataDTO
 from app.service_layer.services import UsersServices
-from app.utils import GoogleAuthManager, TokenManager
+from app.utils import GoogleAuthManager, TokenManager, UserAuthManager
 
 __all__ = ("router",)
 
@@ -29,10 +29,10 @@ router = APIRouter(
 @router.post("/login")
 async def login_user(
     form_user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    user_service: FromDishka[UsersServices],
     token_manager: FromDishka[TokenManager],
+    user_auth_manager: FromDishka[UserAuthManager],
 ) -> SResponseTokens:
-    user = await user_service.authenticate_user(
+    user = await user_auth_manager.authenticate_user(
         form_data=UserFormDataDTO(
             email=form_user_data.username,
             password=form_user_data.password,
@@ -72,6 +72,7 @@ async def login_with_google(
             oauth_provider=google_user.provider,
         ),
     )
+    await user_service.update_last_login(email=google_user.email)
 
     token_pair = token_manager.create_token_pair(
         user_data=UserTokenDTO(
@@ -87,7 +88,7 @@ async def login_with_google(
 
 
 @router.post("/refresh")
-def token_refresh(
+async def token_refresh(
     token: SRequestRefreshToken,
     token_manager: FromDishka[TokenManager],
 ) -> SResponseTokens:

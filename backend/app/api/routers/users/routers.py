@@ -1,8 +1,12 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 
-from app.api.routers.schemas.users import SRequestUser, SResponseUserDB
+from app.api.routers.schemas.users import (
+    SRequestUser,
+    SResponseUserDB,
+    SResponseUserUpdate,
+)
 from app.api.routers.users._types import QueryUserID
 from app.dto.users import UserDTO
 from app.service_layer.services import UsersServices
@@ -32,7 +36,7 @@ async def create_user(
         ),
     )
 
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={"message": "User created"},
     )
@@ -48,3 +52,37 @@ async def get_user(
 ) -> SResponseUserDB:
     user_data = await user_service.get_user_by_id(user_id=user_id)
     return SResponseUserDB(**user_data.to_dict())
+
+
+@router.patch(
+    "/",
+    summary="Update user info",
+)
+async def patch_user(
+    user_id: QueryUserID,
+    user_data: SResponseUserUpdate,
+    user_service: FromDishka[UsersServices],
+):
+    await user_service.update_user_password(
+        user_id=user_id,
+        password=user_data.password,
+    )
+    return ORJSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Password updated"},
+    )
+
+
+@router.delete(
+    "/",
+    summary="Delete user profile",
+)
+async def delete_user(
+    user_id: QueryUserID,
+    user_service: FromDishka[UsersServices],
+):
+    await user_service.deactivate_user(user_id=user_id)
+    return ORJSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "User deleted"},
+    )

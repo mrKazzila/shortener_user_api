@@ -28,6 +28,7 @@ class Users(Base):
     email: Mapped[str] = mapped_column(
         doc="User email",
         type_=String(100),
+        index=True,
         unique=True,
         nullable=False,
     )
@@ -64,6 +65,11 @@ class Users(Base):
     )
     last_login: Mapped[datetime] = mapped_column(
         doc="Last login date",
+        type_=DateTime(timezone=True),
+        nullable=True,
+    )
+    deactivated_at: Mapped[datetime] = mapped_column(
+        doc="Deactivated profile date",
         type_=DateTime(timezone=True),
         nullable=True,
     )
