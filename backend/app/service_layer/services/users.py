@@ -9,9 +9,9 @@ from app.dto.users import (
     UserFromDBDTO,
 )
 from app.exceptions.users import (
+    PasswordRequiredException,
     UserAlreadyExistException,
     UserNotFoundException,
-    PasswordRequiredException,
 )
 
 if TYPE_CHECKING:

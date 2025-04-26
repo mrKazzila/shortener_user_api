@@ -41,6 +41,7 @@ class OAuthUserPasswordException(BaseUserException):
             detail="OAuth users must use provider login.",
         )
 
+
 class PasswordRequiredException(BaseUserException):
     def __init__(self) -> None:
         super().__init__(
