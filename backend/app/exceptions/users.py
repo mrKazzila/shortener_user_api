@@ -40,3 +40,10 @@ class OAuthUserPasswordException(BaseUserException):
             status_code=HTTPStatus.UNAUTHORIZED,
             detail="OAuth users must use provider login.",
         )
+
+class PasswordRequiredException(BaseUserException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Password is required for non-OAuth users",
+        )
