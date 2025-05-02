@@ -107,15 +107,6 @@ class UsersServices:
             raise UserNotFoundException()
         raise UserNotFoundException()
 
-    async def verify_user_email(self, email: str, verify_code: str) -> None:
-        user = await self.query_service.get_user_by_email(email=email)
-        # TODO: get value from redis and compare
-        await self.command_service.verify_user_email(user_id=user.id)
-        # TODO: remove val from redis
-
-    async def send_verification_email(self):
-        pass
-
     @staticmethod
     def _new_user_dict_object(
         *,

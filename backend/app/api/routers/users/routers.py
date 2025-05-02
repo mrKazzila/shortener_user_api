@@ -3,12 +3,10 @@ from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 
 from app.api.routers.schemas.users import (
-    SRequestUser,
     SResponseUserDB,
     SResponseUserUpdate,
 )
 from app.api.routers.users._types import QueryUserID
-from app.dto.users import UserDTO
 from app.service_layer.services import UsersServices
 
 __all__ = ("router",)
@@ -18,28 +16,6 @@ router = APIRouter(
     tags=["users"],
     route_class=DishkaRoute,
 )
-
-
-@router.post(
-    "/",
-    summary="Create user",
-    response_model=dict[str, str],
-)
-async def create_user(
-    user_data: SRequestUser,
-    user_service: FromDishka[UsersServices],
-):
-    await user_service.create_new_user(
-        user_data=UserDTO(
-            email=str(user_data.email),
-            password=user_data.password.get_secret_value(),
-        ),
-    )
-
-    return ORJSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content={"message": "User created"},
-    )
 
 
 @router.get(
