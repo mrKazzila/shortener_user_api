@@ -53,12 +53,12 @@ class UsersServices:
         if not user_data.is_oauth and not user_data.password:
             raise PasswordRequiredException()
 
-        hashed_password = (
-            self.password_manager.hash_password(
-                password=user_data.password,
-            )
-            if user_data.password
-            else None
+        password = None
+        if not user_data.password:
+            password = self.password_manager.generate_password()
+
+        hashed_password = self.password_manager.hash_password(
+            password=user_data.password if user_data.password else password,
         )
 
         user_id = uuid4()
@@ -111,7 +111,7 @@ class UsersServices:
     def _new_user_dict_object(
         *,
         user_id: UUID,
-        password: str | None,
+        password: str,
         user_data: UserDTO,
     ) -> dict[str, str | bool | datetime | UUID | None]:
         user_dict = user_data.to_dict()

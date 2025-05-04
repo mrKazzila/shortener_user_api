@@ -1,9 +1,18 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Self
+from typing import NewType, Self
 from uuid import UUID
 
-__all__ = ("CreatedUserDTO", "UserDTO", "UserFormDataDTO", "UserFromDBDTO")
+__all__ = (
+    "CreatedUserDTO",
+    "UserDTO",
+    "UserFormDataDTO",
+    "UserFromDBDTO",
+    "XUserHeader",
+)
+
+
+XUserHeader = NewType("XUserHeader", str)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

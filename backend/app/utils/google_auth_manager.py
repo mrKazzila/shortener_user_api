@@ -1,3 +1,5 @@
+import logging
+
 from google.auth.transport import requests
 from google.oauth2 import id_token
 
@@ -5,6 +7,8 @@ from app.dto.auth import GoogleAuthUserDTO
 from app.settings.config import settings
 
 __all__ = ("GoogleAuthManager",)
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleAuthManager:
@@ -19,7 +23,6 @@ class GoogleAuthManager:
             if id_info["aud"] != settings.GOOGLE_CLIENT_ID:
                 raise ValueError("Invalid audience")
 
-            print(f"TEST: {id_info=!r}")
             return GoogleAuthUserDTO(email=id_info["email"])
         except ValueError as e:
             raise e

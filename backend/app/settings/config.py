@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     APP_NAME: str
     MODE: str
 
+    USER_HEADER: str
+
     ACCESS_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(90)]
     REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(3600)]
     SECRET_KEY: str

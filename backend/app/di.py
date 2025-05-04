@@ -1,11 +1,15 @@
 import logging
 
 from dishka import Provider, Scope, provide
+from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.dto.users import XUserHeader
+from app.exceptions.users import UserHeaderNotFoundException
 from app.service_layer.cqrs import QueryService, UserCommandService
 from app.service_layer.services import UsersServices
 from app.service_layer.unit_of_work import UnitOfWork
+from app.settings.config import settings
 from app.settings.database import async_session_maker
 from app.utils import (
     GoogleAuthManager,
@@ -76,3 +80,9 @@ class ServiceProvider(Provider):
             command_service=command_service,
             password_manager=password_manager,
         )
+
+    @provide(scope=Scope.REQUEST)
+    async def get_user_id(self, request: Request) -> XUserHeader:
+        if not (user_id := request.headers.get(settings.USER_HEADER)):
+            raise UserHeaderNotFoundException()
+        return XUserHeader(user_id)

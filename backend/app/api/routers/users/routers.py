@@ -6,10 +6,12 @@ from app.api.routers.schemas.users import (
     SResponseUserDB,
     SResponseUserUpdate,
 )
-from app.api.routers.users._types import QueryUserID
+from app.api.routers.users._types import PathUserID
+from app.dto.users import XUserHeader
 from app.service_layer.services import UsersServices
 
 __all__ = ("router",)
+
 
 router = APIRouter(
     prefix="/users",
@@ -19,25 +21,27 @@ router = APIRouter(
 
 
 @router.get(
-    "/",
+    "/{user_id}",
     summary="Get user info",
 )
 async def get_user(
-    user_id: QueryUserID,
+    user_id: PathUserID,
     user_service: FromDishka[UsersServices],
+    _: FromDishka[XUserHeader],
 ) -> SResponseUserDB:
     user_data = await user_service.get_user_by_id(user_id=user_id)
     return SResponseUserDB(**user_data.to_dict())
 
 
 @router.patch(
-    "/",
+    "/{user_id}",
     summary="Update user info",
 )
 async def patch_user(
-    user_id: QueryUserID,
+    user_id: PathUserID,
     user_data: SResponseUserUpdate,
     user_service: FromDishka[UsersServices],
+    _: FromDishka[XUserHeader],
 ):
     await user_service.update_user_password(
         user_id=user_id,
@@ -50,12 +54,13 @@ async def patch_user(
 
 
 @router.delete(
-    "/",
+    "/{user_id}",
     summary="Delete user profile",
 )
 async def delete_user(
-    user_id: QueryUserID,
+    user_id: PathUserID,
     user_service: FromDishka[UsersServices],
+    _: FromDishka[XUserHeader],
 ):
     await user_service.deactivate_user(user_id=user_id)
     return ORJSONResponse(

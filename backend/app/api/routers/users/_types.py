@@ -1,14 +1,14 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Query
+from fastapi import Path
 
-__all__ = ("QueryUserID",)
+__all__ = ("PathUserID",)
 
 
-QueryUserID = Annotated[
+PathUserID = Annotated[
     UUID,
-    Query(
+    Path(
         description="Unique user identifier (UUID)",
         example=UUID("1fbbe5e1-5441-4ca4-a012-a0cd62e94245"),
     ),
