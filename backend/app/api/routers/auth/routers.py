@@ -78,6 +78,7 @@ async def login_with_google(
                 oauth_provider=google_user.provider,
             ),
         )
+        # TODO: SEND EMAIL TO NEW USER
 
     await user_service.update_last_login(email=google_user.email)
 
