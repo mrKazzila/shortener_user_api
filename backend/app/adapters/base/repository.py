@@ -1,4 +1,6 @@
+from datetime import datetime
 from typing import TypeVar
+from uuid import UUID
 
 from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -39,7 +41,12 @@ class SQLAlchemyRepository(ABCRepository):
 
         return statement_result.scalar_one_or_none()
 
-    async def update(self, *, model_id: int, **update_data: str | int) -> None:
+    async def update(
+        self,
+        *,
+        model_id: UUID,
+        **update_data: str | int | datetime | bool,
+    ) -> None:
         """Update entity some data."""
         _statement = (
             update(self.model).filter_by(id=model_id).values(**update_data)

@@ -1,4 +1,6 @@
 import logging
+from random import choice
+from string import ascii_letters, digits
 
 from passlib.context import CryptContext
 
@@ -8,8 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class PasswordManager:
+    CHARS = f"{ascii_letters}{digits}"
+    LENGTH = 32
+
     def __init__(self):
         self._pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    def generate_password(self):
+        return "".join(choice(self.CHARS) for _ in range(self.LENGTH))
 
     def verify_password(
         self,

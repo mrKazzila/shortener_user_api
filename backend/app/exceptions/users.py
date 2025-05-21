@@ -32,3 +32,29 @@ class IncorrectEmailOrPasswordException(BaseUserException):
             status_code=HTTPStatus.UNAUTHORIZED,
             detail="Incorrect email or password.",
         )
+
+
+class OAuthUserPasswordException(BaseUserException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="OAuth users must use provider login.",
+        )
+
+
+class PasswordRequiredException(BaseUserException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Password is required for non-OAuth users",
+        )
+
+
+class UserHeaderNotFoundException(BaseUserException):
+    """Raised when the request does not contain a custom header."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="User ID required",
+        )

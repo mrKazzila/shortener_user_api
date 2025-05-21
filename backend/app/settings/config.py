@@ -18,11 +18,14 @@ class Settings(BaseSettings):
     APP_NAME: str
     MODE: str
 
+    USER_HEADER: str
+
     ACCESS_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(90)]
     REFRESH_TOKEN_EXPIRES: Annotated[int, Ge(1), Le(3600)]
     SECRET_KEY: str
     ALGORITHM: str
     JWT_COOKIE_NAME: str
+    GOOGLE_CLIENT_ID: str = "4/0Ab_5qlkZeAMFVT8r3WETi5KxIA2IPQ1NzR-xPk4CovBe6mKOuH5kLkHg6ZMkdhe_Mnq7lQ"
 
     POSTGRES_VERSION: str
 

@@ -1,17 +1,21 @@
 import logging
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
-from app.dto.users import UserDTO, UserFormDataDTO
+from app.dto.users import (
+    CreatedUserDTO,
+    UserDTO,
+    UserFromDBDTO,
+)
 from app.exceptions.users import (
-    IncorrectEmailOrPasswordException,
+    PasswordRequiredException,
     UserAlreadyExistException,
     UserNotFoundException,
 )
-from app.utils import PasswordManager
 
 if TYPE_CHECKING:
-    from app.adapters.domain.users_repository import UsersRepository
-    from app.service_layer.unit_of_work import UnitOfWork
+    from app.service_layer.cqrs import QueryService, UserCommandService
     from app.utils import PasswordManager
 
 __all__ = ("UsersServices",)
@@ -20,96 +24,104 @@ logger = logging.getLogger(__name__)
 
 
 class UsersServices:
-    __slots__ = ("uow", "password_manager")
+    __slots__ = ("query_service", "command_service", "password_manager")
 
     def __init__(
         self,
-        uow: "UnitOfWork",
+        *,
+        query_service: "QueryService",
+        command_service: "UserCommandService",
         password_manager: "PasswordManager",
     ) -> None:
-        self.uow = uow
+        self.query_service = query_service
+        self.command_service = command_service
         self.password_manager = password_manager
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}. {self.uow}"
+        return f"{self.__class__.__name__}."
 
     async def create_new_user(
         self,
         *,
         user_data: UserDTO,
-    ) -> None:
-        async with self.uow as transaction:
-            user_repo = transaction.users_repo
+    ) -> CreatedUserDTO:
+        if _ := await self.query_service.get_user_by_email(
+            email=user_data.email,
+        ):
+            raise UserAlreadyExistException()
 
-            if await self.get_user_from_db(
-                user_repo=user_repo,
-                email=user_data.email,
-            ):
-                raise UserAlreadyExistException()
+        if not user_data.is_oauth and not user_data.password:
+            raise PasswordRequiredException()
 
-            handel_user_data: UserDTO = self._handel_user_data(
-                user_data=user_data,
-            )
+        password = None
+        if not user_data.password:
+            password = self.password_manager.generate_password()
 
-            await user_repo.add(data=handel_user_data.to_dict())
-            await transaction.commit()
+        hashed_password = self.password_manager.hash_password(
+            password=user_data.password if user_data.password else password,
+        )
 
-    async def is_authenticate_user(
+        user_id = uuid4()
+        user_dict = self._new_user_dict_object(
+            user_id=user_id,
+            password=hashed_password,
+            user_data=user_data,
+        )
+
+        await self.command_service.create_user(user_data=user_dict)
+
+        return CreatedUserDTO(
+            id=user_id,
+            is_active=user_data.is_active,
+        )
+
+    async def get_user_by_id(self, *, user_id: UUID) -> UserFromDBDTO:
+        if user := await self.query_service.get_user_by_id(user_id=user_id):
+            return user
+        raise UserNotFoundException()
+
+    async def update_last_login(self, email: str) -> None:
+        user = await self.query_service.get_user_by_email(email=email)
+        await self.command_service.update_last_login(user_id=user.id)
+
+    async def update_user_password(
         self,
         *,
-        form_data: UserFormDataDTO,
-    ) -> bool:
-        async with self.uow as transaction:
-            user_repo = transaction.users_repo
-
-            user = await self.get_user_from_db(
-                user_repo=user_repo,
-                email=form_data.email,
-            )
-
-        if not user:
-            raise UserNotFoundException()
-
-        if is_valid_data := self._check_user(
-            user=user,
-            user_from_form=form_data,
-        ):
-            return is_valid_data
-
-        raise IncorrectEmailOrPasswordException()
-
-    @staticmethod
-    async def get_user_from_db(
-        *,
-        user_repo: "UsersRepository",
-        email: str,
-    ) -> UserDTO | None:
-        _reference = {"email": email}
-
-        if result := await user_repo.get(reference=_reference):
-            return UserDTO(
-                email=result.email,
-                password=result.password,
-            )
-        return None
-
-    def _handel_user_data(self, *, user_data: UserDTO) -> UserDTO:
+        user_id: UUID,
+        password: str,
+    ) -> None:
         hashed_password = self.password_manager.hash_password(
-            password=user_data.password,
+            password=password,
         )
-        return UserDTO(
-            email=user_data.email,
+        user = await self.query_service.get_user_by_id(user_id=user_id)
+
+        await self.command_service.update_password(
+            user_id=user.id,
             password=hashed_password,
         )
 
-    def _check_user(
-        self,
+    async def deactivate_user(self, user_id: UUID) -> None:
+        if user := await self.query_service.get_user_by_id(user_id=user_id):
+            if user.is_active:
+                await self.command_service.deactivate_user(user_id=user.id)
+            raise UserNotFoundException()
+        raise UserNotFoundException()
+
+    @staticmethod
+    def _new_user_dict_object(
         *,
-        user: UserDTO,
-        user_from_form: UserFormDataDTO,
-    ) -> bool:
-        is_valid_pass = self.password_manager.verify_password(
-            plain_password=user_from_form.password,
-            hashed_pwd=user.password,
+        user_id: UUID,
+        password: str,
+        user_data: UserDTO,
+    ) -> dict[str, str | bool | datetime | UUID | None]:
+        user_dict = user_data.to_dict()
+        user_dict.update(
+            {
+                "id": user_id,
+                "password": password,
+                "created_at": datetime.now(UTC),
+                "is_email_verified": user_data.is_oauth,
+            },
         )
-        return user.email == user_from_form.email and is_valid_pass
+
+        return user_dict

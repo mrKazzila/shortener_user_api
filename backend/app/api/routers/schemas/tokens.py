@@ -1,45 +1,30 @@
-from enum import StrEnum
+from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 __all__ = (
-    "SAccessToken",
-    "SRefreshToken",
-    "STokens",
-    "STokenTypes",
-    "STokenData",
-    "SRefreshTokenRequest",
+    "SRequestGoogleAuth",
+    "SRequestRefreshToken",
+    "SResponseTokens",
+    "SResponseGoogleAuthToken",
 )
 
 
-class SRefreshTokenRequest(BaseModel):
+class _SBaseTokenRequest(BaseModel):
     token: str
 
 
-class STokenBase(BaseModel):
-    token_type: str = "bearer"
+class SRequestGoogleAuth(_SBaseTokenRequest): ...
 
 
-class SAccessToken(STokenBase):
-    access_token: str
+class SRequestRefreshToken(_SBaseTokenRequest): ...
 
 
-class SRefreshToken(STokenBase):
-    refresh_token: str
-
-
-class STokens(BaseModel):
+class SResponseTokens(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
 
 
-class STokenTypes(StrEnum):
-    access = "access"
-    refresh = "refresh"
-
-
-class STokenData(BaseModel):
-    email: EmailStr
-    type: STokenTypes
-    expiration: int
+class SResponseGoogleAuthToken(SResponseTokens):
+    user_id: UUID
